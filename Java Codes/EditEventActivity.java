@@ -8,6 +8,7 @@ import androidx.fragment.app.DialogFragment;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.ContentValues;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -32,7 +33,7 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
     private EditText eventNameET;
     private TextView title;
     private ImageButton startDateButton, endDateButton, startTimeButton, endTimeButton;
-    private Button saveButton, deleteButton;
+    private Button saveButton, deleteButton, repeatButton;
     private String currentDateString, start, end, eventName;
     private Calendar c;
     public int SDAY, SYEAR, SMONTH, EDAY, EYEAR, EMONTH, SHOUR, SMINUTE, EHOUR, EMINUTE, ID = -1;
@@ -57,6 +58,7 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
         saveButton = findViewById(R.id.saveButton);
         deleteButton = findViewById(R.id.deleteButton);
         title = findViewById(R.id.title);
+        repeatButton = findViewById(R.id.repeatButton);
 
         if (getIntent().getStringExtra("EDIT") != null) {
             start = getIntent().getStringExtra("START");
@@ -171,6 +173,18 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
             }
         });
 
+        repeatButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent repeatIntent = new Intent(EditEventActivity.this, RepeatActivity.class);
+                repeatIntent.putExtra("DAY", SDAY);
+                repeatIntent.putExtra("YEAR", SYEAR);
+                repeatIntent.putExtra("MONTH", SMONTH);
+                startActivityForResult(repeatIntent, 1);
+
+            }
+        });
+
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -210,7 +224,7 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
                         insertToDB();
                     else if (ID != -1){ // update
                         updateRow();
-                }
+                    }
 
                 }
             }
@@ -224,6 +238,18 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
             }
         });
 
+
+
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode == RESULT_OK && requestCode == 1) {
+            if (data.hasExtra("Repeat Type")) {
+                Toast.makeText(this, data.getExtras().getString("Repeat Type"),
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     public int findID() {
