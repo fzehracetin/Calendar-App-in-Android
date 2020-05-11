@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".RepeatActivity">
+
+    <RadioGroup
+        android:id="@+id/repeatRadioGroup"
+        android:layout_width="121dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="15dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.496"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView5">
+
+        <RadioButton
+            android:id="@+id/neverR"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="monospace"
+            android:text="Never"
+            android:onClick="repeatCheck"/>
+
+        <RadioButton
+            android:id="@+id/dailyR"
+            android:layout_width="131dp"
+            android:layout_height="wrap_content"
+            android:fontFamily="monospace"
+            android:text="Daily"
+            android:onClick="repeatCheck"/>
+
+        <RadioButton
+            android:id="@+id/weeklyR"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="monospace"
+            android:text="Weekly"
+            android:onClick="repeatCheck"/>
+
+        <RadioButton
+            android:id="@+id/monthlyR"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="monospace"
+            android:text="Monthly"
+            android:onClick="repeatCheck"/>
+
+        <RadioButton
+            android:id="@+id/yearlyR"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="monospace"
+            android:text="Yearly"
+            android:onClick="repeatCheck"/>
+
+    </RadioGroup>
+
+    <TextView
+        android:id="@+id/everyText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="23dp"
+        android:fontFamily="monospace"
+        android:text="Every"
+        android:textColor="#044652"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toStartOf="@+id/everyET"
+        app:layout_constraintHorizontal_bias="0.856"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/repeatRadioGroup" />
+
+    <EditText
+        android:id="@+id/everyET"
+        android:layout_width="52dp"
+        android:layout_height="42dp"
+        android:layout_marginTop="15dp"
+        android:inputType="numberDecimal"
+        android:text="1"
+        android:textAlignment="center"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/repeatRadioGroup" />
+
+    <TextView
+        android:id="@+id/dayTW"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="23dp"
+        android:fontFamily="monospace"
+        android:text="day"
+        android:textColor="#044652"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.123"
+        app:layout_constraintStart_toEndOf="@+id/everyET"
+        app:layout_constraintTop_toBottomOf="@+id/repeatRadioGroup" />
+
+    <CheckBox
+        android:id="@+id/mondayCB"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="M "
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.099"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/everyET"
+        android:onClick="dayChecked" />
+
+    <CheckBox
+        android:id="@+id/wednesdayCB"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="W "
+        android:visibility="invisible"
+        app:layout_constraintStart_toEndOf="@+id/tuesdayCB"
+        app:layout_constraintTop_toBottomOf="@+id/everyET"
+        android:onClick="dayChecked"/>
+
+    <CheckBox
+        android:id="@+id/thursdayCB"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="T "
+        android:visibility="invisible"
+        app:layout_constraintStart_toEndOf="@+id/wednesdayCB"
+        app:layout_constraintTop_toBottomOf="@+id/everyET"
+        android:onClick="dayChecked"/>
+
+    <CheckBox
+        android:id="@+id/tuesdayCB"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="T "
+        android:visibility="invisible"
+        app:layout_constraintStart_toEndOf="@+id/mondayCB"
+        app:layout_constraintTop_toBottomOf="@+id/everyET"
+        android:onClick="dayChecked"/>
+
+    <CheckBox
+        android:id="@+id/fridayCB"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="F "
+        android:visibility="invisible"
+        app:layout_constraintStart_toEndOf="@+id/thursdayCB"
+        app:layout_constraintTop_toBottomOf="@+id/everyET"
+        android:onClick="dayChecked"/>
+
+    <CheckBox
+        android:id="@+id/sundayCB"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="S"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toStartOf="@+id/saturdayCB"
+        app:layout_constraintHorizontal_bias="0.157"
+        app:layout_constraintStart_toEndOf="@+id/fridayCB"
+        app:layout_constraintTop_toBottomOf="@+id/everyET"
+        android:onClick="dayChecked"/>
+
+    <CheckBox
+        android:id="@+id/saturdayCB"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="S "
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.669"
+        app:layout_constraintStart_toEndOf="@+id/fridayCB"
+        app:layout_constraintTop_toBottomOf="@+id/everyET"
+        android:onClick="dayChecked"/>
+
+    <TextView
+        android:id="@+id/textView5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:fontFamily="monospace"
+        android:text="REPEAT"
+        android:textColor="#F44336"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <RadioGroup
+        android:id="@+id/durationRadioGroup"
+        android:layout_width="138dp"
+        android:layout_height="97dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/durationText">
+
+        <RadioButton
+            android:id="@+id/foreverR"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="monospace"
+            android:text="Forever"
+            android:onClick="durationCheck"/>
+
+        <RadioButton
+            android:id="@+id/repetationsR"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="monospace"
+            android:text="Repetitions"
+            android:onClick="durationCheck"/>
+
+        <RadioButton
+            android:id="@+id/untilR"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="monospace"
+            android:text="Until"
+            android:onClick="durationCheck"/>
+    </RadioGroup>
+
+    <TextView
+        android:id="@+id/durationText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:fontFamily="monospace"
+        android:text="Duration"
+        android:textColor="#F44336"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.492"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/thursdayCB" />
+
+    <ImageButton
+        android:id="@+id/calendarButton"
+        android:layout_width="32dp"
+        android:layout_height="33dp"
+        android:backgroundTint="#044652"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.18"
+        android:visibility="invisible"
+        app:layout_constraintStart_toEndOf="@+id/durationRadioGroup"
+        app:layout_constraintTop_toBottomOf="@+id/repeatET"
+        app:srcCompat="@android:drawable/ic_menu_today" />
+
+    <EditText
+        android:id="@+id/repeatET"
+        android:layout_width="31dp"
+        android:layout_height="35dp"
+        android:layout_marginStart="19dp"
+        android:layout_marginTop="44dp"
+        android:ems="10"
+        android:inputType="numberDecimal"
+        android:text="1"
+        android:visibility="invisible"
+        android:textAlignment="center"
+        android:textSize="14sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@+id/durationRadioGroup"
+        app:layout_constraintTop_toBottomOf="@+id/durationText" />
+
+    <Button
+        android:id="@+id/saveButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Save"
+        android:visibility="visible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/durationRadioGroup" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
