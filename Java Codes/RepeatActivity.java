@@ -15,6 +15,7 @@ import android.widget.ImageButton;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -80,7 +81,8 @@ public class RepeatActivity extends AppCompatActivity implements DatePickerDialo
             public void onClick(View v) {
                 data.putExtra("Repeat Type", repeatRB.getText().toString());
                 if (! repeatRB.getText().toString().equals("Never")) {
-                    data.putExtra("Repeat Frequency", everyTW.getText().toString());
+                    data.putExtra("Repeat Frequency", everyET.getText().toString());
+                    data.putExtra("Duration Type", durationRB.getText().toString());
                 }
                 if (durationRB.getText().toString().equals("Repetitions")) {
                     data.putExtra("Repeat Count", repetitionET.getText().toString());
@@ -88,14 +90,16 @@ public class RepeatActivity extends AppCompatActivity implements DatePickerDialo
                 else if (durationRB.getText().toString().equals("Until")) {
                     data.putExtra("Until Date", currentDateString);
                 }
-                if (! repeatRB.getText().toString().equals("Weekly")) {
-                    data.putExtra("Sunday", sun);
-                    data.putExtra("Monday", mon);
-                    data.putExtra("Tuesday", tue);
-                    data.putExtra("Wednesday", wed);
-                    data.putExtra("Thursday", thu);
-                    data.putExtra("Friday", fri);
-                    data.putExtra("Saturday", sat);
+                if (repeatRB.getText().toString().equals("Weekly")) {
+                    boolean[] daysOfWeek = new boolean[7];
+                    daysOfWeek[0] = sun;
+                    daysOfWeek[1] = mon;
+                    daysOfWeek[2] = tue;
+                    daysOfWeek[3] = wed;
+                    daysOfWeek[4] = thu;
+                    daysOfWeek[5] = fri;
+                    daysOfWeek[6] = sat;
+                    data.putExtra("Days of Week", daysOfWeek);
                 }
                 setResult(RESULT_OK, data);
                 finish();

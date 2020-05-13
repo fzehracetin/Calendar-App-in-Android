@@ -1,7 +1,5 @@
 package com.example.calendar;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.DialogFragment;
 
@@ -28,18 +26,65 @@ import java.util.Calendar;
 import java.util.Date;
 
 public class EditEventActivity extends AppCompatActivity implements DatePickerDialog.OnDateSetListener,
-        TimePickerDialog.OnTimeSetListener{
+        TimePickerDialog.OnTimeSetListener {
     private SQLiteDatabase mDatabase;
     private EditText eventNameET;
     private TextView title;
     private ImageButton startDateButton, endDateButton, startTimeButton, endTimeButton;
     private Button saveButton, deleteButton, repeatButton;
-    private String currentDateString, start, end, eventName;
+    private String currentDateString, start, end, eventName, repeatType, untilDate, repeatCount;
     private Calendar c;
-    public int SDAY, SYEAR, SMONTH, EDAY, EYEAR, EMONTH, SHOUR, SMINUTE, EHOUR, EMINUTE, ID = -1;
+    public int ID = -1, SERI;
     public boolean sTimeSet, eTimeSet, isStart;
+    public boolean[] daysOfWeek = new boolean[7];
     private Bundle args;
     ContentValues cv;
+    private String repeatFrequency, durationType;
+    private MyDate startDatem, endDatem, diffDatem;
+
+    public class MyDate {
+        public int year, month, day, hour, minute;
+        public String dateString;
+        private Calendar c;
+
+        public MyDate(int year, int month, int day, int hour, int minute) {
+            this.year = year;
+            this.month = month;
+            this.day = day;
+            this.hour = hour;
+            this.minute = minute;
+        }
+
+        public void setDateString() {
+            Date date = getDate();
+            DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+            this.dateString = df.format(date);
+        }
+
+        public String getDateString() {
+            setDateString();
+            return dateString;
+        }
+
+        private void setCalendar() {
+            c = Calendar.getInstance();
+            c.set(Calendar.YEAR, year);
+            c.set(Calendar.MONTH, month);
+            c.set(Calendar.DAY_OF_MONTH, day);
+            c.set(Calendar.HOUR_OF_DAY, hour);
+            c.set(Calendar.MINUTE, minute);
+        }
+
+        public Date getDate() {
+            setCalendar();
+            return c.getTime();
+        }
+
+        public Calendar getCalendar() {
+            setCalendar();
+            return c;
+        }
+    }
 
 
     @Override
@@ -68,11 +113,11 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
                 Date startDate = df.parse(start);
                 Calendar calendar = Calendar.getInstance();
                 calendar.setTime(startDate);
-                SDAY = calendar.get(Calendar.DAY_OF_MONTH);
-                SMONTH = calendar.get(Calendar.MONTH);
-                SYEAR = calendar.get(Calendar.YEAR);
-                SMINUTE = calendar.get(Calendar.MINUTE);
-                SHOUR = calendar.get(Calendar.HOUR_OF_DAY);
+
+                startDatem = new MyDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
+                        calendar.get(Calendar.DAY_OF_MONTH), calendar.get(Calendar.HOUR_OF_DAY),
+                        calendar.get(Calendar.MINUTE));
+
             } catch (ParseException e) {
                 e.printStackTrace();
             }
@@ -80,11 +125,9 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
                 Date endDate = df.parse(end);
                 Calendar calendar = Calendar.getInstance();
                 calendar.setTime(endDate);
-                EDAY = calendar.get(Calendar.DAY_OF_MONTH);
-                EYEAR = calendar.get(Calendar.YEAR);
-                EMONTH = calendar.get(Calendar.YEAR);
-                EMINUTE = calendar.get(Calendar.MINUTE);
-                EHOUR = calendar.get(Calendar.HOUR_OF_DAY);
+                endDatem = new MyDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
+                        calendar.get(Calendar.DAY_OF_MONTH), calendar.get(Calendar.HOUR_OF_DAY),
+                        calendar.get(Calendar.MINUTE));
             } catch (ParseException e) {
                 e.printStackTrace();
             }
@@ -96,20 +139,19 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
             ID = findID();
             deleteButton.setVisibility(View.VISIBLE);
 
-        }
-        else {
-            SDAY = getIntent().getIntExtra("DAY", 1);
-            SYEAR = getIntent().getIntExtra("YEAR", 1970);
-            SMONTH = getIntent().getIntExtra("MONTH", 0);
-            EDAY = getIntent().getIntExtra("DAY", 1);
-            EYEAR = getIntent().getIntExtra("YEAR", 1970);
-            EMONTH = getIntent().getIntExtra("MONTH", 0);
-
+        } else {
             c = Calendar.getInstance();
-            EHOUR = c.get(Calendar.HOUR_OF_DAY);
-            SHOUR = c.get(Calendar.HOUR_OF_DAY);
-            EMINUTE = c.get(Calendar.MINUTE);
-            SMINUTE= c.get(Calendar.MINUTE);
+            startDatem = new MyDate(getIntent().getIntExtra("YEAR", 1970),
+                    getIntent().getIntExtra("MONTH", 0),
+                    getIntent().getIntExtra("DAY", 1),
+                    c.get(Calendar.HOUR_OF_DAY),
+                    c.get(Calendar.MINUTE));
+            endDatem = new MyDate(getIntent().getIntExtra("YEAR", 1970),
+                    getIntent().getIntExtra("MONTH", 0),
+                    getIntent().getIntExtra("DAY", 1),
+                    c.get(Calendar.HOUR_OF_DAY),
+                    c.get(Calendar.MINUTE));
+
             sTimeSet = false;
             eTimeSet = false;
             deleteButton.setVisibility(View.INVISIBLE);
@@ -121,9 +163,9 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
                 isStart = true;
                 DialogFragment datePicker = new DatePickerFragment();
                 args = new Bundle();
-                args.putInt("DAY", SDAY);
-                args.putInt("YEAR", SYEAR);
-                args.putInt("MONTH", SMONTH);
+                args.putInt("DAY", startDatem.day);
+                args.putInt("YEAR", startDatem.year);
+                args.putInt("MONTH", startDatem.month);
                 datePicker.setArguments(args);
                 datePicker.show(getSupportFragmentManager(), "date picker");
             }
@@ -136,8 +178,8 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
                 DialogFragment timePicker = new TimePickerFragment();
                 if (sTimeSet) {
                     args = new Bundle();
-                    args.putInt("HOUR", SHOUR);
-                    args.putInt("MINUTE", SMINUTE);
+                    args.putInt("HOUR", startDatem.hour);
+                    args.putInt("MINUTE", startDatem.minute);
                     timePicker.setArguments(args);
                 }
                 timePicker.show(getSupportFragmentManager(), "time picker");
@@ -150,9 +192,9 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
                 isStart = false;
                 DialogFragment datePicker = new DatePickerFragment();
                 args = new Bundle();
-                args.putInt("DAY", EDAY);
-                args.putInt("YEAR", EYEAR);
-                args.putInt("MONTH", EMONTH);
+                args.putInt("DAY", endDatem.day);
+                args.putInt("YEAR", endDatem.year);
+                args.putInt("MONTH", endDatem.month);
                 datePicker.setArguments(args);
                 datePicker.show(getSupportFragmentManager(), "date picker");
             }
@@ -165,8 +207,8 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
                 DialogFragment timePicker = new TimePickerFragment();
                 if (eTimeSet) {
                     args = new Bundle();
-                    args.putInt("HOUR", EHOUR);
-                    args.putInt("MINUTE", EMINUTE);
+                    args.putInt("HOUR", endDatem.hour);
+                    args.putInt("MINUTE", endDatem.minute);
                     timePicker.setArguments(args);
                 }
                 timePicker.show(getSupportFragmentManager(), "time picker");
@@ -177,9 +219,9 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
             @Override
             public void onClick(View v) {
                 Intent repeatIntent = new Intent(EditEventActivity.this, RepeatActivity.class);
-                repeatIntent.putExtra("DAY", SDAY);
-                repeatIntent.putExtra("YEAR", SYEAR);
-                repeatIntent.putExtra("MONTH", SMONTH);
+                repeatIntent.putExtra("DAY", startDatem.day);
+                repeatIntent.putExtra("YEAR", startDatem.year);
+                repeatIntent.putExtra("MONTH", startDatem.month);
                 startActivityForResult(repeatIntent, 1);
 
             }
@@ -191,41 +233,29 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
                 if (!dateBoundValid()) {
                     Toast.makeText(EditEventActivity.this, "Date interval is not valid." +
                             " Event could not be saved.", Toast.LENGTH_LONG).show();
-                }
-                else if (eventNameET.getText().toString().trim().length() == 0)
+                } else if (eventNameET.getText().toString().trim().length() == 0)
                     Toast.makeText(EditEventActivity.this, "Event name can not be null.",
                             Toast.LENGTH_LONG).show();
                 else {
                     eventName = eventNameET.getText().toString();
-                    c = Calendar.getInstance();
-                    c.set(Calendar.YEAR, SYEAR);
-                    c.set(Calendar.MONTH, SMONTH);
-                    c.set(Calendar.DAY_OF_MONTH, SDAY);
-                    c.set(Calendar.HOUR_OF_DAY, SHOUR);
-                    c.set(Calendar.MINUTE, SMINUTE);
-                    DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-                    start = df.format(c.getTime());
-
-                    c = Calendar.getInstance();
-                    c.set(Calendar.YEAR, EYEAR);
-                    c.set(Calendar.MONTH, EMONTH);
-                    c.set(Calendar.DAY_OF_MONTH, EDAY);
-                    c.set(Calendar.HOUR_OF_DAY, EHOUR);
-                    c.set(Calendar.MINUTE, EMINUTE);
-                    end = df.format(c.getTime());
+                    start = startDatem.getDateString();
+                    end = endDatem.getDateString();
 
                     cv = new ContentValues();
                     cv.put(EventDB.Event.COLUMN_NAME, eventName);
                     cv.put(EventDB.Event.COLUMN_START, start);
                     cv.put(EventDB.Event.COLUMN_END, end);
-                    cv.put(EventDB.Event.COLUMN_SERI, -1);
 
-                    if (getIntent().getStringExtra("EDIT") == null) // new
-                        insertToDB();
-                    else if (ID != -1){ // update
-                        updateRow();
+                    if (repeatType != null && !repeatType.equals("Never"))
+                        repeater();
+                    else {
+                        cv.put(EventDB.Event.COLUMN_SERI, -1);
+                        if (getIntent().getStringExtra("EDIT") == null) // new
+                            insertToDB();
+                        else if (ID != -1) { // update
+                            updateRow();
+                        }
                     }
-
                 }
             }
         });
@@ -238,18 +268,113 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
             }
         });
 
+    }
 
+    public void repeater() {
+        SERI = findMaxSeri() + 1;
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+        diffDatem = new MyDate(endDatem.year - startDatem.year,endDatem.month - startDatem.month,
+                endDatem.day - startDatem.day, endDatem.hour - startDatem.hour,
+                endDatem.minute - startDatem.minute);
 
+        if (durationType.equals("Until")) {
+            try {
+                Date until = df.parse(untilDate);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+        else if (durationType.equals("Repetitions")) {
+            for (int i = 0; i < Integer.parseInt(repeatCount); i++) { // repetitions
+                // for (int j = 0; j < Integer.parseInt(repeatCount); j++) { // every
+                int every = Integer.parseInt(repeatFrequency);
+                    if (repeatType.equals("Daily")) {
+                        MyDate bufferDate = new MyDate(0, 0, i*every, 0, 0);
+                        repeatEventCreator(bufferDate);
+                        Toast.makeText(EditEventActivity.this, "i: " + Integer.toString(i),
+                                Toast.LENGTH_LONG).show();
+                    }
+                    else if (repeatType.equals("Weekly")) {
+                        int dayOfWeek = startDatem.getCalendar().get(Calendar.DAY_OF_WEEK);
+                        if (i == 0) {
+                            for (int k = dayOfWeek; k < 7; k++) {
+                                if (daysOfWeek[k]) {
+                                    MyDate bufferDate = new MyDate(0, 0, k - dayOfWeek,
+                                            0, 0);
+                                    repeatEventCreator(bufferDate);
+                                }
+                            }
+                        }
+                        else {
+                            for (int k = 0; k < 7; k++){
+                                if (daysOfWeek[k]) {
+                                    MyDate bufferDate = new MyDate(0, 0,7 -
+                                            dayOfWeek + 7 * (i - 1), 0, 0);
+                                    repeatEventCreator(bufferDate);
+                                }
+                            }
+                        }
+                        MyDate bufferDate = new MyDate(0, 0, 0, 0, 0);
+                        repeatEventCreator(bufferDate);
+                    }
+                    else if (repeatType.equals("Monthly")) {
+                        MyDate bufferDate = new MyDate(0, i * every, 0, 0, 0);
+                        repeatEventCreator(bufferDate);
+                    }
+                    else if (repeatType.equals("Yearly")) {
+                        MyDate bufferDate = new MyDate(i * every, 0, 0, 0, 0);
+                        repeatEventCreator(bufferDate);
+                    }
+               // }
+            }
+        }
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == RESULT_OK && requestCode == 1) {
             if (data.hasExtra("Repeat Type")) {
-                Toast.makeText(this, data.getExtras().getString("Repeat Type"),
-                        Toast.LENGTH_SHORT).show();
+                repeatType = data.getStringExtra("Repeat Type");
+                if (!repeatType.equals("Never")) {
+                    repeatFrequency = data.getStringExtra("Repeat Frequency");
+                    durationType = data.getStringExtra("Duration Type");
+                    if (durationType.equals("Repetitions"))
+                        repeatCount = data.getStringExtra("Repeat Count");
+                    else if (durationType.equals("Until"))
+                        untilDate = data.getStringExtra("Until Date");
+                    if (repeatType.equals("Weekly")) {
+                        // starts from sunday
+                        daysOfWeek = data.getBooleanArrayExtra("Days of Week");
+                    }
+                }
             }
         }
+    }
+
+    public void repeatEventCreator(MyDate buffer) {
+        Calendar startT = startDatem.getCalendar();
+        Calendar endT = endDatem.getCalendar();
+        Calendar start = addBuffer(buffer, startT);
+        Calendar end = addBuffer(buffer, endT);
+
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        String startStr = df.format(start.getTime());
+        String endStr = df.format(end.getTime());
+
+        cv = new ContentValues();
+        cv.put(EventDB.Event.COLUMN_NAME, eventName);
+        cv.put(EventDB.Event.COLUMN_START, startStr);
+        cv.put(EventDB.Event.COLUMN_END, endStr);
+        cv.put(EventDB.Event.COLUMN_SERI, SERI);
+        insertToDB();
+
+    }
+
+    public Calendar addBuffer (MyDate buffer, Calendar c) {
+        c.add(Calendar.DAY_OF_MONTH, buffer.day);
+        c.add(Calendar.MONTH, buffer.month);
+        c.add(Calendar.YEAR, buffer.year);
+        return c;
     }
 
     public int findID() {
@@ -259,17 +384,33 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
                 + eventName + "';";
         Cursor cursor = mDatabase.rawQuery(SQLQuery, null);
         int id;
-        if (cursor.moveToFirst()){
+        if (cursor.moveToFirst()) {
             do {
                 id = cursor.getInt(cursor.getColumnIndex(EventDB.Event.COLUMN_ID));
-            } while(cursor.moveToNext());
+            } while (cursor.moveToNext());
             return id;
         }
         return -1;
     }
 
+    public int findMaxSeri() {
+
+        String SQLQuery = EventDB.Event.COLUMN_SERI +  "=(SELECT MAX(" + EventDB.Event.COLUMN_SERI +
+                ") FROM " + EventDB.Event.TABLE_NAME + ")";
+        Cursor cursor = mDatabase.query(EventDB.Event.TABLE_NAME, null, SQLQuery,
+                null, null, null, null);
+        int seri;
+        if (cursor.moveToFirst()) {
+            do {
+                seri = cursor.getInt(cursor.getColumnIndex(EventDB.Event.COLUMN_SERI));
+            } while (cursor.moveToNext());
+            return seri;
+        }
+        return -1;
+    }
+
     public void deleteRow() {
-        mDatabase.delete(EventDB.Event.TABLE_NAME,EventDB.Event.COLUMN_ID + "=" + ID,
+        mDatabase.delete(EventDB.Event.TABLE_NAME, EventDB.Event.COLUMN_ID + "=" + ID,
                 null);
         Toast.makeText(EditEventActivity.this, "Event deleted.",
                 Toast.LENGTH_LONG).show();
@@ -285,6 +426,7 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
         eventNameET.getText().clear();
 
     }
+
     public void insertToDB() {
 
         mDatabase.insert(EventDB.Event.TABLE_NAME, null, cv);
@@ -293,8 +435,11 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
 
         eventNameET.getText().clear();
     }
+    
+    
+
     @Override
-    public void onDateSet(DatePicker view, int year, int month, int dayOfMonth){
+    public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
         c = Calendar.getInstance();
         c.set(Calendar.YEAR, year);
         c.set(Calendar.MONTH, month);
@@ -302,59 +447,57 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
         currentDateString = DateFormat.getDateInstance(DateFormat.FULL).format(c.getTime());
 
         if (isStart) {
-            SDAY = dayOfMonth;
-            SMONTH = month;
-            SYEAR = year;
-        }
-        else {
-            EDAY = dayOfMonth;
-            EMONTH = month;
-            EYEAR = year;
+            startDatem.day = dayOfMonth;
+            startDatem.month = month;
+            startDatem.year = year;
+        } else {
+            endDatem.day = dayOfMonth;
+            endDatem.month = month;
+            endDatem.year = year;
         }
 
     }
 
     @Override
-    public void onTimeSet(TimePicker view, int hourOfDay, int minute){
+    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
 
         if (isStart) {
             eTimeSet = true;
-            SHOUR = hourOfDay;
-            SMINUTE = minute;
-        }
-        else {
+            startDatem.hour = hourOfDay;
+            startDatem.minute = minute;
+        } else {
             sTimeSet = true;
-            EHOUR = hourOfDay;
-            EMINUTE = minute;
+            endDatem.hour = hourOfDay;
+            endDatem.minute = minute;
         }
     }
 
     public boolean dateBoundValid() {
-        if (SYEAR > EYEAR)
+        if (startDatem.year > endDatem.year)
             return false;
-        else if (SYEAR < EYEAR)
+        else if (startDatem.year < endDatem.year)
             return true;
         else {
-            if (SMONTH > EMONTH)
+            if (startDatem.month > endDatem.month)
                 return false;
-            else if (SMONTH < EMONTH)
+            else if (startDatem.month < endDatem.month)
                 return true;
             else {
-                if (SDAY > EDAY)
+                if (startDatem.day > endDatem.day)
                     return false;
-                else if (SDAY < EDAY)
+                else if (startDatem.day < endDatem.day)
                     return true;
                 else {
-                    if (SHOUR > EHOUR)
+                    if (startDatem.hour > endDatem.hour)
                         return false;
-                    else if (SHOUR < EHOUR)
+                    else if (startDatem.hour < endDatem.hour)
                         return true;
                     else {
-                        if (SMINUTE > EMINUTE)
+                        if (startDatem.minute > endDatem.minute)
                             return false;
-                        else if (SMINUTE == EMINUTE)
+                        else if (startDatem.minute == endDatem.minute)
                             return false;
-                        else if(SMINUTE < EMINUTE)
+                        else if (startDatem.minute < endDatem.minute)
                             return true;
                     }
                 }
@@ -362,5 +505,6 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
         }
         return false;
     }
+
 
 }
