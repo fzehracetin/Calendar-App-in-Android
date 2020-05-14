@@ -280,52 +280,72 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
         if (durationType.equals("Until")) {
             try {
                 Date until = df.parse(untilDate);
+                Date start = df.parse(startDatem.getDateString());
+                if (repeatType.equals("Daily")) {
+                    Date startDate = startDatem.getDate();
+
+                }
             } catch (ParseException e) {
                 e.printStackTrace();
             }
         }
-        else if (durationType.equals("Repetitions")) {
+        else if (durationType.equals("Repetitions") || durationType.equals("Forever")) {
+            if (durationType.equals("Forever"))
+                repeatCount = "100";
             for (int i = 0; i < Integer.parseInt(repeatCount); i++) { // repetitions
-                // for (int j = 0; j < Integer.parseInt(repeatCount); j++) { // every
                 int every = Integer.parseInt(repeatFrequency);
-                    if (repeatType.equals("Daily")) {
-                        MyDate bufferDate = new MyDate(0, 0, i*every, 0, 0);
-                        repeatEventCreator(bufferDate);
-                        Toast.makeText(EditEventActivity.this, "i: " + Integer.toString(i),
-                                Toast.LENGTH_LONG).show();
-                    }
-                    else if (repeatType.equals("Weekly")) {
-                        int dayOfWeek = startDatem.getCalendar().get(Calendar.DAY_OF_WEEK);
-                        if (i == 0) {
-                            for (int k = dayOfWeek; k < 7; k++) {
-                                if (daysOfWeek[k]) {
-                                    MyDate bufferDate = new MyDate(0, 0, k - dayOfWeek,
-                                            0, 0);
-                                    repeatEventCreator(bufferDate);
-                                }
+                if (repeatType.equals("Daily")) {
+                    MyDate bufferDate = new MyDate(0, 0, i*every, 0, 0);
+                    repeatEventCreator(bufferDate);
+                }
+                else if (repeatType.equals("Weekly")) {
+                    int dayOfWeek = startDatem.getCalendar().get(Calendar.DAY_OF_WEEK);
+                    if (i == 0) {
+                        for (int k = dayOfWeek; k < 8; k++) {
+                            if (daysOfWeek[k - 1] && !(dayOfWeek == 1 && k == 1)) {
+                                MyDate bufferDate = new MyDate(0, 0, k - dayOfWeek,
+                                        0, 0);
+                                repeatEventCreator(bufferDate);
+                            }
+                            if (k == 7 && daysOfWeek[0]) {  // bu hala neden olmadı!!!!
+                                int day = 7 - dayOfWeek + 1;
+                                if (dayOfWeek == 1)
+                                    day = 0;
+                                MyDate bufferDate = new MyDate(0, 0, day,
+                                        0, 0);
+                                repeatEventCreator(bufferDate);
                             }
                         }
-                        else {
-                            for (int k = 0; k < 7; k++){
-                                if (daysOfWeek[k]) {
-                                    MyDate bufferDate = new MyDate(0, 0,7 -
-                                            dayOfWeek + 7 * (i - 1), 0, 0);
-                                    repeatEventCreator(bufferDate);
-                                }
+                    }
+                    else {
+                        for (int k = 1; k < 7; k++) {
+                            int sunday = 7 - dayOfWeek + 1;
+                            if (daysOfWeek[k] && !((i == Integer.parseInt(repeatCount) - 1) && (dayOfWeek == 1))) {
+                                MyDate bufferDate = new MyDate(0, 0,
+                                        (sunday + k) + 7 * (i - 1), 0, 0);
+                                repeatEventCreator(bufferDate);
+                            }
+                            if (k == 6 && daysOfWeek[0]) {
+                                MyDate bufferDate;
+                                if (dayOfWeek == 1)
+                                    bufferDate = new MyDate(0, 0,
+                                            (sunday) + 7 * (i - 1), 0, 0);
+                                else
+                                    bufferDate = new MyDate(0, 0,
+                                            (sunday) + 7 * i, 0, 0);
+                                repeatEventCreator(bufferDate);
                             }
                         }
-                        MyDate bufferDate = new MyDate(0, 0, 0, 0, 0);
-                        repeatEventCreator(bufferDate);
                     }
-                    else if (repeatType.equals("Monthly")) {
-                        MyDate bufferDate = new MyDate(0, i * every, 0, 0, 0);
-                        repeatEventCreator(bufferDate);
-                    }
-                    else if (repeatType.equals("Yearly")) {
-                        MyDate bufferDate = new MyDate(i * every, 0, 0, 0, 0);
-                        repeatEventCreator(bufferDate);
-                    }
-               // }
+                }
+                else if (repeatType.equals("Monthly")) {
+                    MyDate bufferDate = new MyDate(0, i * every, 0, 0, 0);
+                    repeatEventCreator(bufferDate);
+                }
+                else if (repeatType.equals("Yearly")) {
+                    MyDate bufferDate = new MyDate(i * every, 0, 0, 0, 0);
+                    repeatEventCreator(bufferDate);
+                }
             }
         }
     }
@@ -431,7 +451,7 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
 
         mDatabase.insert(EventDB.Event.TABLE_NAME, null, cv);
         Toast.makeText(EditEventActivity.this, "Event created.",
-                Toast.LENGTH_LONG).show();
+                Toast.LENGTH_SHORT).show();
 
         eventNameET.getText().clear();
     }
