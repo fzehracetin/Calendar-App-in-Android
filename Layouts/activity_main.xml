@@ -6,37 +6,26 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+    <include
+        android:id="@+id/toolbar"
+        layout="@layout/toolbar" />
+
     <CalendarView
         android:id="@+id/calendarView"
         android:layout_width="377dp"
         android:layout_height="362dp"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="24dp"
         android:firstDayOfWeek="2"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.491"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/today_text" />
-
-    <TextView
-        android:id="@+id/today_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:fontFamily="sans-serif"
-        android:text="1970, May 9"
-        android:textColor="@color/colorAccent"
-        android:textSize="30sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.065"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/yearText" />
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/todayButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="36dp"
+        android:layout_marginEnd="32dp"
         android:backgroundTint="#F7F7F7"
         android:fontFamily="sans-serif-medium"
         android:text="TODAY"
@@ -44,7 +33,35 @@
         android:textSize="14sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.78"
-        app:layout_constraintStart_toEndOf="@+id/today_text"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
+
+    <TextView
+        android:id="@+id/monthText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:fontFamily="monospace"
+        android:text="MAY"
+        android:textAlignment="center"
+        android:textColor="@color/colorHeader"
+        android:textSize="36sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toStartOf="@+id/todayButton"
+        app:layout_constraintHorizontal_bias="0.261"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
+
+    <TextView
+        android:id="@+id/yearText"
+        android:layout_width="69dp"
+        android:layout_height="22dp"
+        android:fontFamily="monospace"
+        android:text="2020"
+        android:textAlignment="textStart"
+        android:textColor="@color/colorHeader"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toStartOf="@+id/todayButton"
+        app:layout_constraintHorizontal_bias="0.261"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/monthText" />
 </androidx.constraintlayout.widget.ConstraintLayout>

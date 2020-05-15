@@ -7,20 +7,13 @@
     android:id="@+id/parentLayout">
 
 
-    <CheckBox
-        android:id="@+id/eventCheck"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        android:layout_marginStart="20dp" />
-
     <TextView
         android:id="@+id/eventName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_marginStart="80dp"
+        android:layout_marginStart="40dp"
         android:layout_marginTop="15dp"
         android:fontFamily="monospace"
         android:text="Event Name"
@@ -34,7 +27,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_marginStart="80dp"
+        android:layout_marginStart="40dp"
         android:layout_marginTop="40dp"
         android:fontFamily="monospace"
         android:text="07:00 - 08:00"

@@ -15,7 +15,7 @@
         app:layout_constraintStart_toEndOf="@+id/endDateButton"
         app:layout_constraintTop_toBottomOf="@id/startTimeButton"
         app:srcCompat="@android:drawable/ic_menu_recent_history"
-        app:tint="#044652" />
+        app:tint="@color/colorHeader" />
 
     <ImageButton
         android:id="@+id/endDateButton"
@@ -26,56 +26,43 @@
         app:layout_constraintStart_toEndOf="@+id/textView4"
         app:layout_constraintTop_toBottomOf="@id/startDateButton"
         app:srcCompat="@android:drawable/ic_menu_today"
-        app:tint="#044652" />
+        app:tint="@color/colorHeader" />
 
     <ImageView
         android:id="@+id/imageView5"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="25dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.079"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageView"
         app:srcCompat="@android:drawable/ic_menu_mylocation"
-        app:tint="#044652" />
+        app:tint="@color/colorHeader" />
 
     <ImageView
         android:id="@+id/imageView6"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="25dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.079"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageView7"
-        app:srcCompat="@android:drawable/ic_menu_edit"
-        app:tint="#044652" />
-
-    <ImageView
-        android:id="@+id/imageView7"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.073"
+        app:layout_constraintHorizontal_bias="0.076"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageView5"
-        app:srcCompat="@android:drawable/ic_menu_my_calendar"
-        app:tint="#044652" />
+        app:srcCompat="@android:drawable/ic_menu_edit"
+        app:tint="@color/colorHeader" />
 
     <TextView
         android:id="@+id/title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="36dp"
         android:fontFamily="monospace"
         android:text="NEW EVENT"
-        android:textColor="#F44336"
+        android:textColor="@color/colorPrimary"
         android:textSize="24sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -83,7 +70,7 @@
         android:id="@+id/eventName"
         android:layout_width="264dp"
         android:layout_height="41dp"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="28dp"
         android:ems="10"
         android:fontFamily="monospace"
         android:hint="Event Name"
@@ -99,10 +86,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="28dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="25dp"
         android:fontFamily="monospace"
         android:text="Start"
-        android:textColor="#F44336"
+        android:textColor="@color/colorPrimary"
         android:textSize="18sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
@@ -113,10 +100,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="28dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="25dp"
         android:fontFamily="monospace"
         android:text="End"
-        android:textColor="#F44336"
+        android:textColor="@color/colorPrimary"
         android:textSize="18sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
@@ -127,40 +114,40 @@
         android:layout_width="32dp"
         android:layout_height="33dp"
         android:layout_marginStart="52dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="21dp"
         app:layout_constraintStart_toEndOf="@+id/textView3"
         app:layout_constraintTop_toBottomOf="@+id/eventName"
         app:srcCompat="@android:drawable/ic_menu_today"
-        app:tint="#044652" />
+        app:tint="@color/colorHeader" />
 
     <ImageButton
         android:id="@+id/startTimeButton"
         android:layout_width="33dp"
         android:layout_height="35dp"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="21dp"
         app:layout_constraintStart_toEndOf="@+id/startDateButton"
         app:layout_constraintTop_toBottomOf="@+id/eventName"
         app:srcCompat="@android:drawable/ic_menu_recent_history"
-        app:tint="#044652" />
+        app:tint="@color/colorHeader" />
 
     <ImageView
         android:id="@+id/imageView11"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="25dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.079"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView4"
         app:srcCompat="@android:drawable/ic_popup_reminder"
-        app:tint="#044652" />
+        app:tint="#B4000000" />
 
     <EditText
         android:id="@+id/editText3"
         android:layout_width="174dp"
         android:layout_height="64dp"
-        android:layout_marginTop="312dp"
+        android:layout_marginTop="292dp"
         android:ems="10"
         android:fontFamily="monospace"
         android:gravity="start|top"
@@ -168,8 +155,8 @@
         android:inputType="textMultiLine"
         android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintHorizontal_bias="0.221"
+        app:layout_constraintStart_toEndOf="@+id/imageView6"
         app:layout_constraintTop_toBottomOf="@+id/eventName" />
 
     <Button
@@ -177,7 +164,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
-        android:layout_marginEnd="104dp"
+        android:layout_marginEnd="88dp"
+        android:backgroundTint="#BAA4CE"
         android:text="Save"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/editText3" />
@@ -187,10 +175,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
-        android:backgroundTint="#92F43636"
+        android:backgroundTint="#BAA4CE"
         android:text="Delete"
         app:layout_constraintEnd_toStartOf="@+id/saveButton"
-        app:layout_constraintHorizontal_bias="0.732"
+        app:layout_constraintHorizontal_bias="0.672"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/editText3" />
 
@@ -198,8 +186,8 @@
         android:id="@+id/imageView"
         android:layout_width="32dp"
         android:layout_height="32dp"
-        android:layout_marginTop="20dp"
-        android:tint="#044652"
+        android:layout_marginTop="25dp"
+        android:tint="#BC000000"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.079"
         app:layout_constraintStart_toStartOf="parent"
@@ -210,8 +198,8 @@
         android:id="@+id/repeatButton"
         android:layout_width="81dp"
         android:layout_height="39dp"
-        android:layout_marginTop="64dp"
-        android:backgroundTint="#00BCD4"
+        android:layout_marginTop="80dp"
+        android:backgroundTint="#624D77"
         android:text="Repeat"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.276"
