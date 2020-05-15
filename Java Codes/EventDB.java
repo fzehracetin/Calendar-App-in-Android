@@ -17,6 +17,5 @@ public class EventDB {
         public static final String COLUMN_LOCATION = "LOCATION";
         public static final String COLUMN_INVITEES = "INVITEES";
         public static final String COLUMN_NOTE = "NOTE";
-        public static final String COLUMN_STATE = "STATE";
     }
 }

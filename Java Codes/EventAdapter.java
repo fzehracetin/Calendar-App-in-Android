@@ -30,10 +30,9 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     private Context mContext;
     private Cursor mCursor;
     private TextView eventNameTV, eventTimeTV;
-    private CheckBox eventCheckbox;
     private RelativeLayout parentLayout;
     private SQLiteDatabase mDatabase;
-    private int state, ID;
+    private int ID;
 
     public EventAdapter(Context context, Cursor cursor) {
         mContext = context;
@@ -50,30 +49,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
             eventNameTV = itemView.findViewById(R.id.eventName);
             eventTimeTV = itemView.findViewById(R.id.time);
             parentLayout = itemView.findViewById(R.id.parentLayout);
-            eventCheckbox = itemView.findViewById(R.id.eventCheck);
-
-            eventCheckbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                    boolean isChecked = eventCheckbox.isChecked();
-                    if (eventCheckbox.isChecked() && state == 0) { // write to database
-                        ContentValues cv = new ContentValues();
-                        cv.put(EventDB.Event.COLUMN_STATE, 1);
-                        mDatabase.update(EventDB.Event.TABLE_NAME, cv, EventDB.Event.COLUMN_ID + "=" + ID,
-                                null);
-
-                    }
-                    else if (!eventCheckbox.isChecked() && state == 1) {
-                        ContentValues cv = new ContentValues();
-                        cv.put(EventDB.Event.COLUMN_STATE, 0);
-                        mDatabase.update(EventDB.Event.TABLE_NAME, cv, EventDB.Event.COLUMN_ID + "=" + ID,
-                                null);
-                    }
-
-                }
-            });
         }
-
     }
 
     @NonNull
@@ -93,7 +69,6 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         final String name = mCursor.getString(mCursor.getColumnIndex(EventDB.Event.COLUMN_NAME));
         final String startDate = mCursor.getString(mCursor.getColumnIndex(EventDB.Event.COLUMN_START));
         final String endDate = mCursor.getString(mCursor.getColumnIndex(EventDB.Event.COLUMN_END));
-        state = mCursor.getInt(mCursor.getColumnIndex(EventDB.Event.COLUMN_STATE));
         ID = mCursor.getInt(mCursor.getColumnIndex(EventDB.Event.COLUMN_ID));
 
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
@@ -101,16 +76,13 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
             Date end = df.parse(endDate);
             Calendar c = Calendar.getInstance();
             Date currentDate = c.getTime();
-            if (end != null && end.before(currentDate)) {
-                eventNameTV.setTextColor(Color.parseColor("#EB9791"));
-
+            if (end != null && end.getTime() - currentDate.getTime() < 0) {
+                eventNameTV.setTextColor(Color.parseColor("#BAA4CE"));
             }
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        if (state == 1) {
-            eventCheckbox.setChecked(true);
-        }
+
         String date = startDate.split(" ")[1] + " - " + endDate.split(" ")[1];
         eventNameTV.setText(name);
         eventTimeTV.setText(date);
@@ -126,8 +98,6 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
                 view.getContext().startActivity(editEventIntent);
             }
         });
-
-
     }
 
     @Override

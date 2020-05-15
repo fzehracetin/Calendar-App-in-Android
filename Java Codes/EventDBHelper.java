@@ -30,8 +30,7 @@ public class EventDBHelper extends SQLiteOpenHelper {
                 Event.COLUMN_ALERT + " TEXT, " +
                 Event.COLUMN_LOCATION + " TEXT, " +
                 Event.COLUMN_INVITEES + " TEXT, " +
-                Event.COLUMN_NOTE + " TEXT, " +
-                Event.COLUMN_STATE + " INTEGER DEFAULT 0" + ");";
+                Event.COLUMN_NOTE + " TEXT" + ");";
 
         sqLiteDatabase.execSQL(SQL_CREATE_EVENT_TABLE);
     }

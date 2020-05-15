@@ -19,6 +19,8 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.google.android.material.snackbar.Snackbar;
+
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -137,7 +139,6 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
             sTimeSet = true;
             eTimeSet = true;
             ID = findID();
-            deleteButton.setVisibility(View.VISIBLE);
 
         } else {
             c = Calendar.getInstance();
@@ -154,7 +155,6 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
 
             sTimeSet = false;
             eTimeSet = false;
-            deleteButton.setVisibility(View.INVISIBLE);
         }
 
         startDateButton.setOnClickListener(new View.OnClickListener() {
@@ -230,12 +230,15 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Snackbar mySnackbar;
                 if (!dateBoundValid()) {
-                    Toast.makeText(EditEventActivity.this, "Date interval is not valid." +
-                            " Event could not be saved.", Toast.LENGTH_LONG).show();
-                } else if (eventNameET.getText().toString().trim().length() == 0)
-                    Toast.makeText(EditEventActivity.this, "Event name can not be null.",
-                            Toast.LENGTH_LONG).show();
+                    mySnackbar = Snackbar.make(view, "Date interval is not valid." +
+                            " Event could not be saved.", Snackbar.LENGTH_SHORT);
+                    mySnackbar.show();
+                } else if (eventNameET.getText().toString().trim().length() == 0) {
+                    mySnackbar = Snackbar.make(view, "Event name can not be null.", Snackbar.LENGTH_SHORT);
+                    mySnackbar.show();
+                }
                 else {
                     eventName = eventNameET.getText().toString();
                     start = startDatem.getDateString();
@@ -247,107 +250,148 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
                     cv.put(EventDB.Event.COLUMN_END, end);
 
                     if (repeatType != null && !repeatType.equals("Never"))
-                        repeater();
+                        repeater(view);
                     else {
                         cv.put(EventDB.Event.COLUMN_SERI, -1);
                         if (getIntent().getStringExtra("EDIT") == null) // new
-                            insertToDB();
+                            insertToDB(view);
                         else if (ID != -1) { // update
-                            updateRow();
+                            updateRow(view);
                         }
                     }
                 }
             }
         });
-
         deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (ID != -1)
-                    deleteRow();
+                    deleteRow(view);
+                else {
+                    eventNameET.getText().clear();
+                }
             }
         });
 
     }
 
-    public void repeater() {
+
+    public void repeater(View view) {
         SERI = findMaxSeri() + 1;
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
         diffDatem = new MyDate(endDatem.year - startDatem.year,endDatem.month - startDatem.month,
                 endDatem.day - startDatem.day, endDatem.hour - startDatem.hour,
                 endDatem.minute - startDatem.minute);
-
+        Date until = startDatem.getDate();
+        Date today = new Date();
         if (durationType.equals("Until")) {
             try {
-                Date until = df.parse(untilDate);
-                Date start = df.parse(startDatem.getDateString());
-                if (repeatType.equals("Daily")) {
-                    Date startDate = startDatem.getDate();
-
-                }
+                until = df.parse(untilDate);
+                today = startDatem.getDate();
+                repeatCount = "0";
             } catch (ParseException e) {
                 e.printStackTrace();
             }
         }
-        else if (durationType.equals("Repetitions") || durationType.equals("Forever")) {
-            if (durationType.equals("Forever"))
-                repeatCount = "100";
-            for (int i = 0; i < Integer.parseInt(repeatCount); i++) { // repetitions
-                int every = Integer.parseInt(repeatFrequency);
-                if (repeatType.equals("Daily")) {
-                    MyDate bufferDate = new MyDate(0, 0, i*every, 0, 0);
-                    repeatEventCreator(bufferDate);
-                }
-                else if (repeatType.equals("Weekly")) {
-                    int dayOfWeek = startDatem.getCalendar().get(Calendar.DAY_OF_WEEK);
-                    if (i == 0) {
-                        for (int k = dayOfWeek; k < 8; k++) {
-                            if (daysOfWeek[k - 1] && !(dayOfWeek == 1 && k == 1)) {
-                                MyDate bufferDate = new MyDate(0, 0, k - dayOfWeek,
-                                        0, 0);
-                                repeatEventCreator(bufferDate);
-                            }
-                            if (k == 7 && daysOfWeek[0]) {  // bu hala neden olmadı!!!!
-                                int day = 7 - dayOfWeek + 1;
-                                if (dayOfWeek == 1)
-                                    day = 0;
-                                MyDate bufferDate = new MyDate(0, 0, day,
-                                        0, 0);
-                                repeatEventCreator(bufferDate);
-                            }
+        else {
+            Calendar c = Calendar.getInstance();
+            c.setTime(startDatem.getDate());
+            c.add(Calendar.DAY_OF_MONTH, 1);
+            today = c.getTime();
+        }
+
+        if (durationType.equals("Forever"))
+            repeatCount = "100";
+        int i = 0;
+
+        while( i < Integer.parseInt(repeatCount) || today.before(until)) { // repetitions
+            int every = Integer.parseInt(repeatFrequency);
+            if (repeatType.equals("Daily")) {
+                MyDate bufferDate = new MyDate(0, 0, i*every, 0, 0);
+                today = repeatEventCreator(bufferDate, until, view);
+            }
+            else if (repeatType.equals("Weekly")) {
+                int dayOfWeek = startDatem.getCalendar().get(Calendar.DAY_OF_WEEK);
+                if (i == 0) {
+                    for (int k = dayOfWeek; k < 8; k++) {
+                        if (daysOfWeek[k - 1] && !(dayOfWeek == 1 && k == 1)) {
+                            MyDate bufferDate = new MyDate(0, 0, k - dayOfWeek,
+                                    0, 0);
+                            today = repeatEventCreator(bufferDate, until, view);
                         }
-                    }
-                    else {
-                        for (int k = 1; k < 7; k++) {
-                            int sunday = 7 - dayOfWeek + 1;
-                            if (daysOfWeek[k] && !((i == Integer.parseInt(repeatCount) - 1) && (dayOfWeek == 1))) {
-                                MyDate bufferDate = new MyDate(0, 0,
-                                        (sunday + k) + 7 * (i - 1), 0, 0);
-                                repeatEventCreator(bufferDate);
-                            }
-                            if (k == 6 && daysOfWeek[0]) {
-                                MyDate bufferDate;
-                                if (dayOfWeek == 1)
-                                    bufferDate = new MyDate(0, 0,
-                                            (sunday) + 7 * (i - 1), 0, 0);
-                                else
-                                    bufferDate = new MyDate(0, 0,
-                                            (sunday) + 7 * i, 0, 0);
-                                repeatEventCreator(bufferDate);
-                            }
+                        if (k == 7 && daysOfWeek[0]) {  // bu hala neden olmadı!!!!
+                            int day = 7 - dayOfWeek + 1;
+                            if (dayOfWeek == 1)
+                                day = 0;
+                            MyDate bufferDate = new MyDate(0, 0, day,
+                                    0, 0);
+                            today = repeatEventCreator(bufferDate, until, view);
                         }
                     }
                 }
-                else if (repeatType.equals("Monthly")) {
-                    MyDate bufferDate = new MyDate(0, i * every, 0, 0, 0);
-                    repeatEventCreator(bufferDate);
-                }
-                else if (repeatType.equals("Yearly")) {
-                    MyDate bufferDate = new MyDate(i * every, 0, 0, 0, 0);
-                    repeatEventCreator(bufferDate);
+                else {
+                    for (int k = 1; k < 7; k++) {
+                        int sunday = 7 - dayOfWeek + 1;
+                        if (daysOfWeek[k] && !((i == Integer.parseInt(repeatCount) - 1) && (dayOfWeek == 1))) {
+                            MyDate bufferDate = new MyDate(0, 0,
+                                    (sunday + k) + 7 * (i - 1), 0, 0);
+                            today = repeatEventCreator(bufferDate, until, view);
+                        }
+                        if (k == 6 && daysOfWeek[0]) {
+                            MyDate bufferDate;
+                            if (dayOfWeek == 1)
+                                bufferDate = new MyDate(0, 0,
+                                        (sunday) + 7 * (i - 1), 0, 0);
+                            else
+                                bufferDate = new MyDate(0, 0,
+                                        (sunday) + 7 * i, 0, 0);
+                            today = repeatEventCreator(bufferDate, until, view);
+                        }
+                    }
                 }
             }
+            else if (repeatType.equals("Monthly")) {
+                MyDate bufferDate = new MyDate(0, i * every, 0, 0, 0);
+                today = repeatEventCreator(bufferDate, until, view);
+            }
+            else if (repeatType.equals("Yearly")) {
+                MyDate bufferDate = new MyDate(i * every, 0, 0, 0, 0);
+                today = repeatEventCreator(bufferDate, until, view);
+            }
+            if (!durationType.equals("Until"))
+                today = until;
+            i++;
         }
+
+    }
+
+    public Date repeatEventCreator(MyDate buffer, Date until, View view) {
+        Calendar startT = startDatem.getCalendar();
+        Calendar endT = endDatem.getCalendar();
+        Calendar start = addBuffer(buffer, startT);
+        Calendar end = addBuffer(buffer, endT);
+
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        String startStr = df.format(start.getTime());
+        String endStr = df.format(end.getTime());
+
+        if ((durationType.equals("Until") && start.getTime().before(until) &&
+                end.getTime().before(until)) || !durationType.equals("Until")) {
+            cv = new ContentValues();
+            cv.put(EventDB.Event.COLUMN_NAME, eventName);
+            cv.put(EventDB.Event.COLUMN_START, startStr);
+            cv.put(EventDB.Event.COLUMN_END, endStr);
+            cv.put(EventDB.Event.COLUMN_SERI, SERI);
+            insertToDB(view);
+        }
+        return end.getTime();
+    }
+
+    public Calendar addBuffer (MyDate buffer, Calendar c) {
+        c.add(Calendar.DAY_OF_MONTH, buffer.day);
+        c.add(Calendar.MONTH, buffer.month);
+        c.add(Calendar.YEAR, buffer.year);
+        return c;
     }
 
     @Override
@@ -371,31 +415,7 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
         }
     }
 
-    public void repeatEventCreator(MyDate buffer) {
-        Calendar startT = startDatem.getCalendar();
-        Calendar endT = endDatem.getCalendar();
-        Calendar start = addBuffer(buffer, startT);
-        Calendar end = addBuffer(buffer, endT);
 
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-        String startStr = df.format(start.getTime());
-        String endStr = df.format(end.getTime());
-
-        cv = new ContentValues();
-        cv.put(EventDB.Event.COLUMN_NAME, eventName);
-        cv.put(EventDB.Event.COLUMN_START, startStr);
-        cv.put(EventDB.Event.COLUMN_END, endStr);
-        cv.put(EventDB.Event.COLUMN_SERI, SERI);
-        insertToDB();
-
-    }
-
-    public Calendar addBuffer (MyDate buffer, Calendar c) {
-        c.add(Calendar.DAY_OF_MONTH, buffer.day);
-        c.add(Calendar.MONTH, buffer.month);
-        c.add(Calendar.YEAR, buffer.year);
-        return c;
-    }
 
     public int findID() {
         String SQLQuery = "SELECT " + EventDB.Event.COLUMN_ID + " FROM " + EventDB.Event.TABLE_NAME +
@@ -429,29 +449,28 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
         return -1;
     }
 
-    public void deleteRow() {
+    public void deleteRow(View view) {
         mDatabase.delete(EventDB.Event.TABLE_NAME, EventDB.Event.COLUMN_ID + "=" + ID,
                 null);
-        Toast.makeText(EditEventActivity.this, "Event deleted.",
-                Toast.LENGTH_LONG).show();
-        eventNameET.getText().clear();
 
+        Snackbar mySnackbar = Snackbar.make(view, "Event deleted.", Snackbar.LENGTH_SHORT);
+        mySnackbar.show();
     }
 
-    public void updateRow() {
+    public void updateRow(View view) {
         mDatabase.update(EventDB.Event.TABLE_NAME, cv, EventDB.Event.COLUMN_ID + "=" + ID,
                 null);
-        Toast.makeText(EditEventActivity.this, "Event updated.",
-                Toast.LENGTH_LONG).show();
+        Snackbar mySnackbar = Snackbar.make(view, "Event updated.", Snackbar.LENGTH_SHORT);
+        mySnackbar.show();
         eventNameET.getText().clear();
 
     }
 
-    public void insertToDB() {
+    public void insertToDB(View view) {
 
         mDatabase.insert(EventDB.Event.TABLE_NAME, null, cv);
-        Toast.makeText(EditEventActivity.this, "Event created.",
-                Toast.LENGTH_SHORT).show();
+        Snackbar mySnackbar = Snackbar.make(view, "Event created.", Snackbar.LENGTH_SHORT);
+        mySnackbar.show();
 
         eventNameET.getText().clear();
     }

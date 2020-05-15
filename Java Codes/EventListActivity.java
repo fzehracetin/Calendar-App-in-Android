@@ -12,6 +12,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -48,7 +50,7 @@ public class EventListActivity extends AppCompatActivity {
         mAdapter = new EventAdapter(this, getAllItems());
         recyclerView.setAdapter(mAdapter);
 
-        Button addButton = findViewById(R.id.addButton);
+        FloatingActionButton addButton = findViewById(R.id.floatingButton);
         TextView dayNumberTV = findViewById(R.id.day_number);
         TextView dayNameTV = findViewById(R.id.day_name);
 
@@ -73,7 +75,8 @@ public class EventListActivity extends AppCompatActivity {
 
     private Cursor getAllItems() {
         String SQLQuery = "SELECT * FROM " + EventDB.Event.TABLE_NAME +
-                " WHERE " + EventDB.Event.COLUMN_START + " GLOB '" + currentDate + "*';";
+                " WHERE " + EventDB.Event.COLUMN_START + " GLOB '" + currentDate + "*'"
+                + " ORDER BY " + EventDB.Event.COLUMN_START + " ASC;" ;
 
         return mDatabase.rawQuery(SQLQuery, null);
     }

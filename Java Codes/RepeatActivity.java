@@ -116,7 +116,6 @@ public class RepeatActivity extends AppCompatActivity implements DatePickerDialo
         c.set(Calendar.DAY_OF_MONTH, dayOfMonth);
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
         currentDateString = df.format(c.getTime());
-
     }
 
     public void dayChecked(View view) {
