@@ -92,10 +92,14 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch(item.getItemId()) {
             case R.id.weekly:
-                Toast.makeText(this, "Weekly selected.", Toast.LENGTH_SHORT).show();
+                Intent weeklyIntent = new Intent(MainActivity.this, WeeklyListActivity.class);
+                weeklyIntent.putExtra("Type", "Weekly");
+                startActivity(weeklyIntent);
                 return true;
             case R.id.monthly:
-                Toast.makeText(this, "Monthly selected.", Toast.LENGTH_SHORT).show();
+                Intent monthlyIntent = new Intent(MainActivity.this, WeeklyListActivity.class);
+                monthlyIntent.putExtra("Type", "Monthly");
+                startActivity(monthlyIntent);
                 return true;
             case R.id.settings:
                 Toast.makeText(this, "Settings selected.", Toast.LENGTH_SHORT).show();

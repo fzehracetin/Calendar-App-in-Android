@@ -47,7 +47,7 @@ public class EventListActivity extends AppCompatActivity {
 
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        mAdapter = new EventAdapter(this, getAllItems());
+        mAdapter = new EventAdapter(this, getAllItems(), "Time");
         recyclerView.setAdapter(mAdapter);
 
         FloatingActionButton addButton = findViewById(R.id.floatingButton);
@@ -76,7 +76,7 @@ public class EventListActivity extends AppCompatActivity {
     private Cursor getAllItems() {
         String SQLQuery = "SELECT * FROM " + EventDB.Event.TABLE_NAME +
                 " WHERE " + EventDB.Event.COLUMN_START + " GLOB '" + currentDate + "*'"
-                + " ORDER BY " + EventDB.Event.COLUMN_START + " ASC;" ;
+                + " ORDER BY datetime(" + EventDB.Event.COLUMN_START + ") ASC;" ;
 
         return mDatabase.rawQuery(SQLQuery, null);
     }
@@ -86,7 +86,7 @@ public class EventListActivity extends AppCompatActivity {
         super.onResume();
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        mAdapter = new EventAdapter(this, getAllItems());
+        mAdapter = new EventAdapter(this, getAllItems(), "Time");
         recyclerView.setAdapter(mAdapter);
 
     }

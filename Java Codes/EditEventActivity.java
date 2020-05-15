@@ -275,7 +275,6 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
 
     }
 
-
     public void repeater(View view) {
         SERI = findMaxSeri() + 1;
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd");

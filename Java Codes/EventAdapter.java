@@ -33,12 +33,18 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     private RelativeLayout parentLayout;
     private SQLiteDatabase mDatabase;
     private int ID;
+    private String type;
+    private String[] days = new String[]{"Sunday", "Monday", "Tuesday", "Wednesday", "Friday",
+            "Saturday"};
+    private String[] months = new String[]{"January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"};
 
-    public EventAdapter(Context context, Cursor cursor) {
+    public EventAdapter(Context context, Cursor cursor, String type) {
         mContext = context;
         mCursor = cursor;
         EventDBHelper dbHelper = new EventDBHelper(context);
         mDatabase = dbHelper.getWritableDatabase();
+        this.type = type;
     }
 
 
@@ -83,8 +89,25 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
             e.printStackTrace();
         }
 
-        String date = startDate.split(" ")[1] + " - " + endDate.split(" ")[1];
+        String date = "hey";
+        Calendar c = Calendar.getInstance();
         eventNameTV.setText(name);
+        if (type.equals("Time"))
+            date = startDate.split(" ")[1] + " - " + endDate.split(" ")[1];
+        else if (type.equals("Weekly")){
+            try {
+                Date start = new SimpleDateFormat("yyyy-MM-dd HH:mm").parse(startDate);
+                c.setTime(start);
+                date = days[c.get(Calendar.DAY_OF_WEEK)] + ", " + months[c.get(Calendar.MONTH)]
+                        + " " + c.get(Calendar.DAY_OF_MONTH);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
+        else {
+            String text = startDate.split(" ")[0];
+            date = months[Integer.parseInt(text.split("-")[1]) - 1] + " " + text.split("-")[2];
+        }
         eventTimeTV.setText(date);
 
         parentLayout.setOnClickListener(new View.OnClickListener() {
@@ -102,7 +125,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
 
     @Override
     public int getItemCount() {
-        return mCursor.getCount(); // database'deki tüm elemanlar
+        return mCursor.getCount();
     }
 
     public void swapCursor(Cursor newCursor) {

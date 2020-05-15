@@ -141,8 +141,6 @@ public class RepeatActivity extends AppCompatActivity implements DatePickerDialo
             dayTW.setText(name + "s");
 
         visibilityController(name);
-
-
     }
 
     public void durationCheck(View view) {
