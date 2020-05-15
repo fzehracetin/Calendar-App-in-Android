@@ -9,6 +9,11 @@
         app:showAsAction="ifRoom">
         <menu>
             <item
+                android:id="@+id/calendar"
+                android:title="Calendar"
+                app:showAsAction="never"
+                />
+            <item
                 android:id="@+id/weekly"
                 android:title="Weekly"
                 app:showAsAction="never"
