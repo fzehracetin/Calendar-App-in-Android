@@ -3,9 +3,11 @@ package com.example.calendar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.DialogFragment;
 
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -17,31 +19,31 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.TimePicker;
-import android.widget.Toast;
 
 import com.google.android.material.snackbar.Snackbar;
 
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
 public class EditEventActivity extends AppCompatActivity implements DatePickerDialog.OnDateSetListener,
         TimePickerDialog.OnTimeSetListener {
     private SQLiteDatabase mDatabase;
-    private EditText eventNameET;
+    private EditText eventNameET, noteET;
     private TextView title;
     private ImageButton startDateButton, endDateButton, startTimeButton, endTimeButton;
-    private Button saveButton, deleteButton, repeatButton;
-    private String currentDateString, start, end, eventName, repeatType, untilDate, repeatCount;
+    private Button saveButton, deleteButton, repeatButton, reminderButton;
+    private String currentDateString, start, end, eventName, repeatType, untilDate, repeatCount, note;
     private Calendar c;
-    public int ID = -1, SERI;
-    public boolean sTimeSet, eTimeSet, isStart;
+    public int ID = -1, SERI = -1;
+    public boolean sTimeSet, eTimeSet, isStart, reminded =false, saved=false, repeated=false;
     public boolean[] daysOfWeek = new boolean[7];
     private Bundle args;
     ContentValues cv;
-    private String repeatFrequency, durationType;
+    private String repeatFrequency, durationType, startDB, endDB;
     private MyDate startDatem, endDatem, diffDatem;
 
     public class MyDate {
@@ -98,12 +100,14 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
         mDatabase = dbHelper.getWritableDatabase();
 
         eventNameET = findViewById(R.id.eventName);
+        noteET = findViewById(R.id.noteET);
         startDateButton = findViewById(R.id.startDateButton);
         endDateButton = findViewById(R.id.endDateButton);
         startTimeButton = findViewById(R.id.startTimeButton);
         endTimeButton = findViewById(R.id.endTimeButton);
         saveButton = findViewById(R.id.saveButton);
         deleteButton = findViewById(R.id.deleteButton);
+        reminderButton = findViewById(R.id.reminderButton);
         title = findViewById(R.id.title);
         repeatButton = findViewById(R.id.repeatButton);
 
@@ -138,9 +142,12 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
             title.setText("EDIT EVENT");
             sTimeSet = true;
             eTimeSet = true;
-            ID = findID();
-
-        } else {
+            findRow();
+            if (note != null) {
+                noteET.setText(note);
+            }
+        }
+        else {
             c = Calendar.getInstance();
             startDatem = new MyDate(getIntent().getIntExtra("YEAR", 1970),
                     getIntent().getIntExtra("MONTH", 0),
@@ -218,6 +225,7 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
         repeatButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                repeated = true;
                 Intent repeatIntent = new Intent(EditEventActivity.this, RepeatActivity.class);
                 repeatIntent.putExtra("DAY", startDatem.day);
                 repeatIntent.putExtra("YEAR", startDatem.year);
@@ -227,9 +235,38 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
             }
         });
 
+        reminderButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (ID == -1)
+                    ID = getMaxID() + 1;
+                if (!dateBoundValid()) {
+                    Snackbar mySnackbar = Snackbar.make(v, "Date interval is not valid." +
+                            " Reminder could not be created.", Snackbar.LENGTH_SHORT);
+                    mySnackbar.show();
+                }
+                else {
+                    reminded = true;
+                    Intent reminderIntent = new Intent(EditEventActivity.this, ReminderActivity.class);
+                    reminderIntent.putExtra("DAY", startDatem.day);
+                    reminderIntent.putExtra("YEAR", startDatem.year);
+                    reminderIntent.putExtra("MONTH", startDatem.month);
+                    reminderIntent.putExtra("HOUR", startDatem.hour);
+                    reminderIntent.putExtra("MINUTE", startDatem.minute);
+                    reminderIntent.putExtra("ID", ID);
+                    startActivity(reminderIntent);
+                }
+            }
+        });
+
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
+            public void onClick(final View view) {
+                eventName = eventNameET.getText().toString();
+                start = startDatem.getDateString();
+                end = endDatem.getDateString();
+                note = noteET.getText().toString();
+
                 Snackbar mySnackbar;
                 if (!dateBoundValid()) {
                     mySnackbar = Snackbar.make(view, "Date interval is not valid." +
@@ -239,16 +276,38 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
                     mySnackbar = Snackbar.make(view, "Event name can not be null.", Snackbar.LENGTH_SHORT);
                     mySnackbar.show();
                 }
+                else if (SERI != -1 && getIntent().getStringExtra("EDIT") != null) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(EditEventActivity.this);
+                    builder.setTitle("Update Event");
+                    builder.setPositiveButton("Only this event", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            insertToCV(eventName, start, end, note);
+                            cv.put(EventDB.Event.COLUMN_SERI, SERI);
+                            updateRow(view, ID);
+                        }
+                    });
+                    if (!isFirst()) {
+                        builder.setNegativeButton("This and future events", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                insertToCV(eventName, start, end, note);
+                                cv.put(EventDB.Event.COLUMN_SERI, SERI);
+                                updateRow(view, ID);
+                                futureEvents(view, "Update");
+                            }
+                        });
+                    }
+                    builder.setNeutralButton("All events in series", new DialogInterface.OnClickListener(){
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            allEvents(view, "Update");
+                        }
+                    });
+                    builder.show();
+                }
                 else {
-                    eventName = eventNameET.getText().toString();
-                    start = startDatem.getDateString();
-                    end = endDatem.getDateString();
-
-                    cv = new ContentValues();
-                    cv.put(EventDB.Event.COLUMN_NAME, eventName);
-                    cv.put(EventDB.Event.COLUMN_START, start);
-                    cv.put(EventDB.Event.COLUMN_END, end);
-
+                    insertToCV(eventName, start, end, note);
                     if (repeatType != null && !repeatType.equals("Never"))
                         repeater(view);
                     else {
@@ -256,7 +315,7 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
                         if (getIntent().getStringExtra("EDIT") == null) // new
                             insertToDB(view);
                         else if (ID != -1) { // update
-                            updateRow(view);
+                            updateRow(view, ID);
                         }
                     }
                 }
@@ -264,15 +323,62 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
         });
         deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
-                if (ID != -1)
-                    deleteRow(view);
+            public void onClick(final View view) {
+                if (SERI != -1 && getIntent().getStringExtra("EDIT") != null) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(EditEventActivity.this);
+                    builder.setTitle("Delete Event");
+                    builder.setPositiveButton("Only this event", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            deleteRow(view, ID);
+                            deleteReminder(ID);
+                        }
+                    });
+                    if (!isFirst()) {
+                        builder.setNegativeButton("This and future events", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                deleteRow(view, ID);
+                                deleteReminder(ID);
+                                futureEvents(view, "Delete");
+                            }
+                        });
+                    }
+                    builder.setNeutralButton("All events in series", new DialogInterface.OnClickListener(){
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            allEvents(view, "Delete");
+                        }
+                    });
+                    builder.show();
+                }
+                else if (ID != -1) {
+                    deleteRow(view, ID);
+                    deleteReminder(ID);
+                }
                 else {
                     eventNameET.getText().clear();
+                    noteET.getText().clear();
+                    if (reminded)
+                        deleteReminder(ID);
                 }
             }
         });
 
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (!saved && reminded) {
+            deleteReminder(ID);
+            finish();
+        }
+    }
+
+    private void deleteReminder(int id) {
+        mDatabase.delete(EventDB.Event.REMINDER_TABLE_NAME,
+                EventDB.Event.REMINDER_COLUMN_EID + "=" + id,
+                null);
     }
 
     public void repeater(View view) {
@@ -362,6 +468,34 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
             i++;
         }
 
+
+    }
+
+    /*public void createReminderRepeatedly() {
+        if (reminded) {
+            ArrayList<Integer> differences = reminderDifferences();
+        }
+    }*/
+
+    public void reminderDifferences(Calendar buffer) {
+        //ArrayList<Integer> differences = new ArrayList<Integer>();
+        String SQLQuery = "SELECT * FROM " + EventDB.Event.REMINDER_TABLE_NAME +
+                " WHERE " + EventDB.Event.REMINDER_COLUMN_EID + "='" + ID + "';";
+        Cursor cursor = mDatabase.rawQuery(SQLQuery, null);
+        Date start = startDatem.getDate();
+        if (cursor.moveToFirst()) {
+            do {
+                String date = cursor.getString(cursor.getColumnIndex(EventDB.Event.REMINDER_COLUMN_DATE));
+                try {
+                    Date reminder = new SimpleDateFormat("yyyy-MM-dd HH:mm").parse(date);
+                    Calendar reminderCal = Calendar.getInstance();
+                    reminderCal.setTime(reminder);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+
+            } while (cursor.moveToNext());
+        }
     }
 
     public Date repeatEventCreator(MyDate buffer, Date until, View view) {
@@ -414,26 +548,97 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
         }
     }
 
+    public boolean isFirst() {
+        String SQLQuery = "SELECT * FROM " + EventDB.Event.TABLE_NAME +
+                " WHERE " + EventDB.Event.COLUMN_SERI + "='" + SERI + "' ORDER BY datetime(" +
+                EventDB.Event.COLUMN_START + ") ASC;";
+        Cursor cursor = mDatabase.rawQuery(SQLQuery, null);
+        int id = 0;
+        if (cursor.moveToFirst())
+            id = cursor.getInt(cursor.getColumnIndex(EventDB.Event.COLUMN_ID));
 
+        return id == ID;
+    }
 
-    public int findID() {
-        String SQLQuery = "SELECT " + EventDB.Event.COLUMN_ID + " FROM " + EventDB.Event.TABLE_NAME +
+    public void allEvents(View view, String type) {
+        String SQLQuery = "SELECT * FROM " + EventDB.Event.TABLE_NAME +
+                " WHERE " + EventDB.Event.COLUMN_SERI + "='" + SERI + "';";
+        Cursor cursor = mDatabase.rawQuery(SQLQuery, null);
+        if (cursor.moveToFirst()) {
+            do {
+                int id = cursor.getInt(cursor.getColumnIndex(EventDB.Event.COLUMN_ID));
+                if (type.equals("Delete")) {
+                    deleteRow(view, id);
+                    deleteReminder(id);
+                }
+                else if (type.equals("Update")) {
+                    String date = findStartDate(id);
+                    String newStartDate = date.split(" ")[0] + " " + start.split(" ")[1];
+                    String newEndDate = date.split(" ")[0] + " " + end.split(" ")[1];
+                    insertToCV(eventName, newStartDate, newEndDate, note);
+                    cv.put(EventDB.Event.COLUMN_SERI, SERI);
+                    updateRow(view, id);
+                }
+            } while (cursor.moveToNext());
+        }
+    }
+
+    public void futureEvents(View view, String type) {
+        String SQLQuery = "SELECT * FROM " + EventDB.Event.TABLE_NAME +
+                " WHERE " + EventDB.Event.COLUMN_SERI + "='" + SERI + "' AND " +
+                EventDB.Event.COLUMN_START + " > '" + startDB + "';";
+        Cursor cursor = mDatabase.rawQuery(SQLQuery, null);
+        if (cursor.moveToFirst()) {
+            do {
+                int id = cursor.getInt(cursor.getColumnIndex(EventDB.Event.COLUMN_ID));
+                if (type.equals("Delete")) {
+                    deleteRow(view, id);
+                    deleteReminder(id);
+                }
+                else if (type.equals("Update")) {
+                    String date = findStartDate(id);
+                    String newStartDate = date.split(" ")[0] + " " + start.split(" ")[1];
+                    String newEndDate = date.split(" ")[0] + " " + end.split(" ")[1];
+                    insertToCV(eventName, newStartDate, newEndDate, note);
+                    cv.put(EventDB.Event.COLUMN_SERI, SERI);
+                    updateRow(view, id);
+                }
+            } while (cursor.moveToNext());
+        }
+
+    }
+
+    public String findStartDate(int id) {
+        String SQLQuery = "SELECT * FROM " + EventDB.Event.TABLE_NAME +
+                " WHERE " + EventDB.Event.COLUMN_ID + "='" + id + "';";
+        Cursor cursor = mDatabase.rawQuery(SQLQuery, null);
+        String start = null;
+        if (cursor.moveToFirst()) {
+            do {
+                start = cursor.getString(cursor.getColumnIndex(EventDB.Event.COLUMN_START));
+            } while (cursor.moveToNext());
+        }
+        return start;
+    }
+
+    public void findRow() {
+        String SQLQuery = "SELECT * FROM " + EventDB.Event.TABLE_NAME +
                 " WHERE " + EventDB.Event.COLUMN_START + "='" + start + "' AND " +
                 EventDB.Event.COLUMN_END + "='" + end + "' AND " + EventDB.Event.COLUMN_NAME + "='"
                 + eventName + "';";
         Cursor cursor = mDatabase.rawQuery(SQLQuery, null);
-        int id;
         if (cursor.moveToFirst()) {
             do {
-                id = cursor.getInt(cursor.getColumnIndex(EventDB.Event.COLUMN_ID));
+                ID = cursor.getInt(cursor.getColumnIndex(EventDB.Event.COLUMN_ID));
+                note = cursor.getString(cursor.getColumnIndex(EventDB.Event.COLUMN_NOTE));
+                SERI = cursor.getInt(cursor.getColumnIndex(EventDB.Event.COLUMN_SERI));
+                startDB = cursor.getString(cursor.getColumnIndex(EventDB.Event.COLUMN_START));
+                endDB = cursor.getString(cursor.getColumnIndex(EventDB.Event.COLUMN_END));
             } while (cursor.moveToNext());
-            return id;
         }
-        return -1;
     }
 
     public int findMaxSeri() {
-
         String SQLQuery = EventDB.Event.COLUMN_SERI +  "=(SELECT MAX(" + EventDB.Event.COLUMN_SERI +
                 ") FROM " + EventDB.Event.TABLE_NAME + ")";
         Cursor cursor = mDatabase.query(EventDB.Event.TABLE_NAME, null, SQLQuery,
@@ -448,33 +653,54 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
         return -1;
     }
 
-    public void deleteRow(View view) {
-        mDatabase.delete(EventDB.Event.TABLE_NAME, EventDB.Event.COLUMN_ID + "=" + ID,
+    public int getMaxID() {
+        String SQLQuery = EventDB.Event.COLUMN_ID +  "=(SELECT MAX(" + EventDB.Event.COLUMN_ID +
+                ") FROM " + EventDB.Event.TABLE_NAME + ")";
+        Cursor cursor = mDatabase.query(EventDB.Event.TABLE_NAME, null, SQLQuery,
+                null, null, null, null);
+        int id = -1;
+        if (cursor.moveToFirst()) {
+            do {
+                id = cursor.getInt(cursor.getColumnIndex(EventDB.Event.COLUMN_ID));
+            } while (cursor.moveToNext());
+        }
+        return id;
+    }
+
+    public void deleteRow(View view, int id) {
+        mDatabase.delete(EventDB.Event.TABLE_NAME, EventDB.Event.COLUMN_ID + "=" + id,
                 null);
 
         Snackbar mySnackbar = Snackbar.make(view, "Event deleted.", Snackbar.LENGTH_SHORT);
         mySnackbar.show();
     }
 
-    public void updateRow(View view) {
-        mDatabase.update(EventDB.Event.TABLE_NAME, cv, EventDB.Event.COLUMN_ID + "=" + ID,
+    public void insertToCV(String eventName, String start, String end, String note) {
+        cv = new ContentValues();
+        cv.put(EventDB.Event.COLUMN_NAME, eventName);
+        cv.put(EventDB.Event.COLUMN_START, start);
+        cv.put(EventDB.Event.COLUMN_END, end);
+        cv.put(EventDB.Event.COLUMN_NOTE, note);
+    }
+
+    public void updateRow(View view, int id) {
+        mDatabase.update(EventDB.Event.TABLE_NAME, cv, EventDB.Event.COLUMN_ID + "=" + id,
                 null);
         Snackbar mySnackbar = Snackbar.make(view, "Event updated.", Snackbar.LENGTH_SHORT);
         mySnackbar.show();
+        saved = true;
         eventNameET.getText().clear();
-
     }
 
     public void insertToDB(View view) {
-
         mDatabase.insert(EventDB.Event.TABLE_NAME, null, cv);
         Snackbar mySnackbar = Snackbar.make(view, "Event created.", Snackbar.LENGTH_SHORT);
         mySnackbar.show();
 
         eventNameET.getText().clear();
+        saved = true;
+        finish();
     }
-    
-    
 
     @Override
     public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
@@ -543,6 +769,5 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
         }
         return false;
     }
-
 
 }

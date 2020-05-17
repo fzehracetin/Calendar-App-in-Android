@@ -98,7 +98,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
             try {
                 Date start = new SimpleDateFormat("yyyy-MM-dd HH:mm").parse(startDate);
                 c.setTime(start);
-                date = days[c.get(Calendar.DAY_OF_WEEK)] + ", " + months[c.get(Calendar.MONTH)]
+                date = days[c.get(Calendar.DAY_OF_WEEK) - 1] + ", " + months[c.get(Calendar.MONTH)]
                         + " " + c.get(Calendar.DAY_OF_MONTH);
             } catch (ParseException e) {
                 e.printStackTrace();

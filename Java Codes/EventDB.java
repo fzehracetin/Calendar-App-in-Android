@@ -17,5 +17,10 @@ public class EventDB {
         public static final String COLUMN_LOCATION = "LOCATION";
         public static final String COLUMN_INVITEES = "INVITEES";
         public static final String COLUMN_NOTE = "NOTE";
+
+        public static final String REMINDER_TABLE_NAME = "REMINDERS";
+        public static final String REMINDER_COLUMN_ID = "ID";
+        public static final String REMINDER_COLUMN_EID = "EVENT_ID";
+        public static final String REMINDER_COLUMN_DATE = "DATE";
     }
 }

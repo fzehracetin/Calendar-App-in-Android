@@ -32,14 +32,19 @@ public class EventDBHelper extends SQLiteOpenHelper {
                 Event.COLUMN_INVITEES + " TEXT, " +
                 Event.COLUMN_NOTE + " TEXT" + ");";
 
+        final String SQL_CREATE_REMINDER_TABLE = "CREATE TABLE " + Event.REMINDER_TABLE_NAME +
+                "(" + Event.REMINDER_COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                Event.REMINDER_COLUMN_EID + " INTEGER NOT NULL, " +
+                Event.REMINDER_COLUMN_DATE + " TEXT NOT NULL);";
+
         sqLiteDatabase.execSQL(SQL_CREATE_EVENT_TABLE);
+        sqLiteDatabase.execSQL(SQL_CREATE_REMINDER_TABLE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int oldVersion, int newVersion) {
-        /*if (newVersion > oldVersion)
-            copyDatabase();*/
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + Event.TABLE_NAME);
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + Event.REMINDER_TABLE_NAME);
         onCreate(sqLiteDatabase);
     }
 }
