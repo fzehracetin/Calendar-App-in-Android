@@ -6,6 +6,18 @@
     android:layout_height="match_parent"
     tools:context=".EditEventActivity">
 
+    <Button
+        android:id="@+id/reminderButton"
+        android:layout_width="98dp"
+        android:layout_height="39dp"
+        android:layout_marginTop="24dp"
+        android:backgroundTint="#624D77"
+        android:text="Reminder"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.279"
+        app:layout_constraintStart_toEndOf="@+id/imageView"
+        app:layout_constraintTop_toBottomOf="@+id/endDateButton" />
+
     <ImageButton
         android:id="@+id/endTimeButton"
         android:layout_width="33dp"
@@ -68,16 +80,16 @@
 
     <EditText
         android:id="@+id/eventName"
-        android:layout_width="264dp"
-        android:layout_height="41dp"
-        android:layout_marginTop="28dp"
+        android:layout_width="290dp"
+        android:layout_height="44dp"
+        android:layout_marginTop="24dp"
         android:ems="10"
         android:fontFamily="monospace"
         android:hint="Event Name"
         android:inputType="textPersonName"
         android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.204"
+        app:layout_constraintHorizontal_bias="0.272"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/title" />
 
@@ -144,9 +156,9 @@
         app:tint="#B4000000" />
 
     <EditText
-        android:id="@+id/editText3"
-        android:layout_width="174dp"
-        android:layout_height="64dp"
+        android:id="@+id/noteET"
+        android:layout_width="222dp"
+        android:layout_height="85dp"
         android:layout_marginTop="292dp"
         android:ems="10"
         android:fontFamily="monospace"
@@ -155,7 +167,7 @@
         android:inputType="textMultiLine"
         android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.221"
+        app:layout_constraintHorizontal_bias="0.368"
         app:layout_constraintStart_toEndOf="@+id/imageView6"
         app:layout_constraintTop_toBottomOf="@+id/eventName" />
 
@@ -168,7 +180,7 @@
         android:backgroundTint="#BAA4CE"
         android:text="Save"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editText3" />
+        app:layout_constraintTop_toBottomOf="@+id/noteET" />
 
     <Button
         android:id="@+id/deleteButton"
@@ -180,7 +192,7 @@
         app:layout_constraintEnd_toStartOf="@+id/saveButton"
         app:layout_constraintHorizontal_bias="0.672"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editText3" />
+        app:layout_constraintTop_toBottomOf="@+id/noteET" />
 
     <ImageView
         android:id="@+id/imageView"
@@ -198,12 +210,12 @@
         android:id="@+id/repeatButton"
         android:layout_width="81dp"
         android:layout_height="39dp"
-        android:layout_marginTop="80dp"
+        android:layout_marginTop="16dp"
         android:backgroundTint="#624D77"
         android:text="Repeat"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.276"
+        app:layout_constraintHorizontal_bias="0.279"
         app:layout_constraintStart_toEndOf="@+id/imageView"
-        app:layout_constraintTop_toBottomOf="@+id/endDateButton" />
+        app:layout_constraintTop_toBottomOf="@+id/reminderButton" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
