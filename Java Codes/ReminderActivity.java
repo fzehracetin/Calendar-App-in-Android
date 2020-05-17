@@ -6,6 +6,7 @@ import androidx.fragment.app.DialogFragment;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.ContentValues;
+import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.View;
@@ -24,6 +25,7 @@ import com.google.android.material.snackbar.Snackbar;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -40,6 +42,10 @@ public class ReminderActivity extends AppCompatActivity implements DatePickerDia
     private int pos = 0, DAY, YEAR, MONTH, HOUR, MINUTE, ID;
     private Calendar c, startCal;
     private Date startDate;
+    private ArrayList<Integer> minutes, hours, days;
+    private ArrayList<String> dates;
+    private boolean deleteAll = false;
+    Intent datas;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,6 +78,12 @@ public class ReminderActivity extends AppCompatActivity implements DatePickerDia
         startCal.set(Calendar.MINUTE, MINUTE);
 
         startDate = startCal.getTime();
+
+        dates = new ArrayList<String>();
+        minutes = new ArrayList<Integer>();
+        hours = new ArrayList<Integer>();
+        days = new ArrayList<Integer>();
+        datas = new Intent();
 
         ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<String>(ReminderActivity.this,
                 android.R.layout.simple_list_item_1, getResources().getStringArray(R.array.date_array));
@@ -121,12 +133,17 @@ public class ReminderActivity extends AppCompatActivity implements DatePickerDia
                     Calendar start = createCalendar(YEAR, MONTH, DAY, HOUR, MINUTE);
                     int amount = Integer.parseInt(amountET.getText().toString());
                     if (pos == 0) // minute
-                        start.add(Calendar.MINUTE, -amount);
+                        minutes.add(amount);
+                        //start.add(Calendar.MINUTE, -amount);
                     else if (pos == 1)  // hour
-                        start.add(Calendar.HOUR, -amount);
+                        hours.add(amount);
+                        //start.add(Calendar.HOUR, -amount);
                     else if (pos == 2) // day
-                        start.add(Calendar.DAY_OF_MONTH, -amount);
-                    insertToDB(start, v);
+                        days.add(amount);
+                        //start.add(Calendar.DAY_OF_MONTH, -amount);
+                    //insertToDB(start, v);
+                    Snackbar mySnackbar = Snackbar.make(v, "Reminder created.", Snackbar.LENGTH_SHORT);
+                    mySnackbar.show();
                     cleanView();
                 }
                 else if (reminderRB.getText().toString().equals("Custom")) {
@@ -136,7 +153,8 @@ public class ReminderActivity extends AppCompatActivity implements DatePickerDia
                         mySnackbar.show();
                     }
                     else {
-                        insertToDB(c, v);
+                        //insertToDB(c, v);
+                        dates.add(new SimpleDateFormat("yyyy-MM-dd HH:mm").format(c.getTime()));
                         cleanView();
                     }
                 }
@@ -146,13 +164,31 @@ public class ReminderActivity extends AppCompatActivity implements DatePickerDia
         deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mDatabase.delete(EventDB.Event.REMINDER_TABLE_NAME,
+                /*mDatabase.delete(EventDB.Event.REMINDER_TABLE_NAME,
                         EventDB.Event.REMINDER_COLUMN_EID + "=" + ID,
-                        null);
+                        null);*/
+                deleteAll = true;
+                dates = new ArrayList<String>();
+                minutes = new ArrayList<Integer>();
+                hours = new ArrayList<Integer>();
+                days = new ArrayList<Integer>();
                 Snackbar mySnackbar = Snackbar.make(v, "All reminders deleted.", Snackbar.LENGTH_SHORT);
                 mySnackbar.show();
             }
         });
+    }
+
+    @Override
+    public void onBackPressed() {
+        datas.putStringArrayListExtra("dates", dates);
+        datas.putIntegerArrayListExtra("minutes", minutes);
+        datas.putIntegerArrayListExtra("hours", hours);
+        datas.putIntegerArrayListExtra("days", days);
+        datas.putExtra("deleteAll", deleteAll);
+
+        setResult(RESULT_OK, datas);
+        finish();
+
     }
 
     public void cleanView() {
