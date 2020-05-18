@@ -289,6 +289,10 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
                             cv.put(EventDB.Event.COLUMN_SERI, SERI);
                             updateRow(view, ID);
                             addReminder(cv);
+                            if (reminded) {
+                                MyAlarmManager manager = new MyAlarmManager(ID, getApplicationContext());
+                                manager.findDates();
+                            }
                         }
                     });
                     if (!isFirst()) {
@@ -299,6 +303,10 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
                                 cv.put(EventDB.Event.COLUMN_SERI, SERI);
                                 updateRow(view, ID);
                                 addReminder(cv);
+                                if (reminded) {
+                                    MyAlarmManager manager = new MyAlarmManager(ID, getApplicationContext());
+                                    manager.findDates();
+                                }
                                 futureEvents(view, "Update");
                             }
                         });
@@ -320,10 +328,18 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
                         if (getIntent().getStringExtra("EDIT") == null) { // new
                             insertToDB(view);
                             addReminder(cv);
+                            if (reminded) {
+                                MyAlarmManager manager = new MyAlarmManager(ID, getApplicationContext());
+                                manager.findDates();
+                            }
                         }
                         else if (ID != -1) { // update
                             updateRow(view, ID);
                             addReminder(cv);
+                            if (reminded) {
+                                MyAlarmManager manager = new MyAlarmManager(ID, getApplicationContext());
+                                manager.findDates();
+                            }
                         }
                     }
                 }
@@ -545,6 +561,11 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
                 today = until;
             i++;
         }
+
+        if (reminded) {
+            MyAlarmManager manager = new MyAlarmManager(ID, getApplicationContext());
+            manager.findDates();
+        }
     }
 
 
@@ -655,6 +676,10 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
                 }
             } while (cursor.moveToNext());
         }
+        if (reminded) {
+            MyAlarmManager manager = new MyAlarmManager(ID, getApplicationContext());
+            manager.findDates();
+        }
     }
 
     public void futureEvents(View view, String type) {
@@ -684,6 +709,10 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
                     addReminder(cv);
                 }
             } while (cursor.moveToNext());
+        }
+        if (reminded) {
+            MyAlarmManager manager = new MyAlarmManager(ID, getApplicationContext());
+            manager.findDates();
         }
 
     }

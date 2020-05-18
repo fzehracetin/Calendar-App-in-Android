@@ -3,7 +3,12 @@ package com.example.calendar;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -19,6 +24,8 @@ import android.widget.Toast;
 import java.util.Calendar;
 import java.util.Date;
 import java.text.DateFormat;
+
+import static com.example.calendar.CalendarNotificationChannel.CHANNEL_ID;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -42,10 +49,10 @@ public class MainActivity extends AppCompatActivity {
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+
         c = Calendar.getInstance();
         monthTV.setText(months[c.get(Calendar.MONTH)]);
         yearTV.setText(Integer.toString(c.get(Calendar.YEAR)));
-
 
         mCalendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
             @Override
