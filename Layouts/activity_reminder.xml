@@ -6,6 +6,66 @@
     android:layout_height="match_parent"
     tools:context=".ReminderActivity">
 
+    <TextView
+        android:id="@+id/reminder1"
+        android:layout_width="232dp"
+        android:layout_height="27dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="60dp"
+        android:fontFamily="monospace"
+        android:text="Reminder 1"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/deleteButton" />
+
+    <TextView
+        android:id="@+id/reminder6"
+        android:layout_width="232dp"
+        android:layout_height="27dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="60dp"
+        android:fontFamily="monospace"
+        android:text="Reminder 1"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/reminder5" />
+
+    <TextView
+        android:id="@+id/reminder5"
+        android:layout_width="232dp"
+        android:layout_height="27dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="60dp"
+        android:fontFamily="monospace"
+        android:text="Reminder 1"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/reminder4" />
+
+    <TextView
+        android:id="@+id/reminder4"
+        android:layout_width="232dp"
+        android:layout_height="27dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="60dp"
+        android:fontFamily="monospace"
+        android:text="Reminder 1"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/reminder3" />
+
+    <TextView
+        android:id="@+id/reminder2"
+        android:layout_width="232dp"
+        android:layout_height="27dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="60dp"
+        android:fontFamily="monospace"
+        android:text="Reminder 1"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/reminder1" />
+
     <Button
         android:id="@+id/deleteButton"
         android:layout_width="wrap_content"
@@ -125,5 +185,83 @@
             android:textStyle="bold"
             android:onClick="reminderCheck"/>
     </RadioGroup>
+
+    <Button
+        android:id="@+id/clearButton1"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/ic_clear"
+        android:backgroundTint="@color/colorHeader"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/deleteButton" />
+
+    <Button
+        android:id="@+id/clearButton6"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/ic_clear"
+        android:backgroundTint="@color/colorHeader"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/clearButton5" />
+
+    <Button
+        android:id="@+id/clearButton5"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/ic_clear"
+        android:backgroundTint="@color/colorHeader"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/clearButton4" />
+
+    <Button
+        android:id="@+id/clearButton4"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/ic_clear"
+        android:backgroundTint="@color/colorHeader"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/clearButton3" />
+
+    <Button
+        android:id="@+id/clearButton3"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/ic_clear"
+        android:backgroundTint="@color/colorHeader"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/clearButton2" />
+
+    <Button
+        android:id="@+id/clearButton2"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/ic_clear"
+        android:backgroundTint="@color/colorHeader"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/clearButton1" />
+
+    <TextView
+        android:id="@+id/reminder3"
+        android:layout_width="232dp"
+        android:layout_height="27dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="60dp"
+        android:fontFamily="monospace"
+        android:text="Reminder 1"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/reminder2" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
