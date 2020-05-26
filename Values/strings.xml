@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Calendar</string>
+    <string name="app_name">FCalendar</string>
 
     <string-array name="date_array">
         <item>minutes</item>
