@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">FCalendar</string>
+
+    <string-array name="date_array">
+        <item>minutes</item>
+        <item>hours</item>
+        <item>days</item>
+    </string-array>
+</resources>
