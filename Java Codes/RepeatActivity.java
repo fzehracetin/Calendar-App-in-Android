@@ -4,7 +4,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.DialogFragment;
 
 import android.app.DatePickerDialog;
+import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -17,6 +20,8 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.material.snackbar.Snackbar;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -26,20 +31,24 @@ public class RepeatActivity extends AppCompatActivity implements DatePickerDialo
     public RadioButton repeatRB, durationRB;
     public CheckBox monCB, tueCB, wenCB, thuCB, friCB, satCB, sunCB;
     public EditText everyET, repetitionET;
-    public TextView dayTW, durationTW, everyTW;
+    public TextView dayTW, durationTW, everyTW, oldRepeatTV;
     public ImageButton calendarButton;
-    public Button saveButton;
+    public Button saveButton, clearButton;
     public Calendar c;
     public String currentDateString;
-    public int DAY, YEAR, MONTH;
-    public boolean mon, tue, wed, thu, fri, sat, sun;
+    public int DAY, YEAR, MONTH, ID, SERI;
+    public boolean mon, tue, wed, thu, fri, sat, sun, oldRepeat = false, deleted = false,
+            newRepeat = true;
     Intent data;
+    private SQLiteDatabase mDatabase;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_repeat);
+        EventDBHelper dbHelper = new EventDBHelper(this);
+        mDatabase = dbHelper.getWritableDatabase();
         repeatRadioGroup = findViewById(R.id.repeatRadioGroup);
         durationRadioGroup = findViewById(R.id.durationRadioGroup);
         monCB = findViewById(R.id.mondayCB);
@@ -56,10 +65,22 @@ public class RepeatActivity extends AppCompatActivity implements DatePickerDialo
         everyTW = findViewById(R.id.everyText);
         durationTW = findViewById(R.id.durationText);
         saveButton = findViewById(R.id.saveButton);
+        clearButton = findViewById(R.id.clearButton);
+        oldRepeatTV = findViewById(R.id.oldRepeat);
 
         DAY = getIntent().getIntExtra("DAY", 1);
         YEAR = getIntent().getIntExtra("YEAR", 2020);
         MONTH = getIntent().getIntExtra("MONTH", 0);
+
+        if (getIntent().hasExtra("ID")) {
+            ID = getIntent().getIntExtra("ID", -1);
+            SERI = getIntent().getIntExtra("SERI", -1);
+            hasOldRepeat();
+        }
+        else {
+            clearButton.setVisibility(View.INVISIBLE);
+            oldRepeatTV.setVisibility(View.INVISIBLE);
+        }
 
         data = new Intent();
 
@@ -76,40 +97,100 @@ public class RepeatActivity extends AppCompatActivity implements DatePickerDialo
             }
         });
 
-        saveButton.setOnClickListener(new View.OnClickListener() {
+        clearButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String day = dayTW.getText().toString();
-                String every = everyET.getText().toString();
-                String text = "Every " + every + " " + day + ".";
-                data.putExtra("Seri Type", text);
-                data.putExtra("Repeat Type", repeatRB.getText().toString());
-                if (! repeatRB.getText().toString().equals("Never")) {
-                    data.putExtra("Repeat Frequency", everyET.getText().toString());
-                    data.putExtra("Duration Type", durationRB.getText().toString());
-                }
-                if (durationRB.getText().toString().equals("Repetitions")) {
-                    data.putExtra("Repeat Count", repetitionET.getText().toString());
-                }
-                else if (durationRB.getText().toString().equals("Until")) {
-                    data.putExtra("Until Date", currentDateString);
-                }
-                if (repeatRB.getText().toString().equals("Weekly")) {
-                    boolean[] daysOfWeek = new boolean[7];
-                    daysOfWeek[0] = sun;
-                    daysOfWeek[1] = mon;
-                    daysOfWeek[2] = tue;
-                    daysOfWeek[3] = wed;
-                    daysOfWeek[4] = thu;
-                    daysOfWeek[5] = fri;
-                    daysOfWeek[6] = sat;
-                    data.putExtra("Days of Week", daysOfWeek);
-                }
-                setResult(RESULT_OK, data);
-                finish();
+                deleteOldRepeats();
+                clearButton.setVisibility(View.INVISIBLE);
+                oldRepeatTV.setVisibility(View.INVISIBLE);
             }
         });
 
+        saveButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!oldRepeat) {
+                    String day = dayTW.getText().toString();
+                    String every = everyET.getText().toString();
+                    String text = "Every " + every + " " + day + ".";
+                    data.putExtra("Seri Type", text);
+                    data.putExtra("Repeat Type", repeatRB.getText().toString());
+                    if (!repeatRB.getText().toString().equals("Never")) {
+                        data.putExtra("Repeat Frequency", everyET.getText().toString());
+                        data.putExtra("Duration Type", durationRB.getText().toString());
+                        newRepeat = true;
+                    }
+                    if (durationRB.getText().toString().equals("Repetitions")) {
+                        data.putExtra("Repeat Count", repetitionET.getText().toString());
+                        newRepeat = true;
+                    } else if (durationRB.getText().toString().equals("Until")) {
+                        data.putExtra("Until Date", currentDateString);
+                        newRepeat = true;
+                    }
+                    if (repeatRB.getText().toString().equals("Weekly")) {
+                        boolean[] daysOfWeek = new boolean[7];
+                        daysOfWeek[0] = sun;
+                        daysOfWeek[1] = mon;
+                        daysOfWeek[2] = tue;
+                        daysOfWeek[3] = wed;
+                        daysOfWeek[4] = thu;
+                        daysOfWeek[5] = fri;
+                        daysOfWeek[6] = sat;
+                        data.putExtra("Days of Week", daysOfWeek);
+                        newRepeat = true;
+                    }
+                    if (!oldRepeat && !newRepeat) {
+                        data.putExtra("Deleted", true);
+                    }
+                    setResult(RESULT_OK, data);
+                    finish();
+                }
+                else {
+                    Snackbar mySnackbar = Snackbar.make(v, "Events can't repeat twice. " +
+                                    "Could not saved.", Snackbar.LENGTH_SHORT);
+                    mySnackbar.show();
+                }
+            }
+        });
+    }
+
+    public void deleteOldRepeats() {
+        String SQLQuery = "SELECT * FROM " + EventDB.Event.TABLE_NAME +
+                " WHERE " + EventDB.Event.COLUMN_SERI + "='" + SERI + "' ORDER BY datetime(" +
+                EventDB.Event.COLUMN_START + ") ASC;";
+
+        Cursor cursor = mDatabase.rawQuery(SQLQuery, null);
+        if (cursor.moveToFirst()) {
+            while (cursor.moveToNext()) {
+                int id = cursor.getInt(cursor.getColumnIndex(EventDB.Event.COLUMN_ID));
+                mDatabase.delete(EventDB.Event.TABLE_NAME, EventDB.Event.COLUMN_ID + "=" +
+                                id,null);
+            }
+            oldRepeat = false;
+            deleted = true;
+            ContentValues cv = new ContentValues();
+            cv.put(EventDB.Event.COLUMN_SERI, -1);
+            mDatabase.update(EventDB.Event.TABLE_NAME, cv, EventDB.Event.COLUMN_ID + "="
+                            + ID,null);
+        }
+    }
+
+
+    public void hasOldRepeat() {
+        String SQLQuery = "SELECT * FROM " + EventDB.Event.TABLE_NAME +
+                " WHERE " + EventDB.Event.COLUMN_ID + "='" + ID + "';";
+        Cursor cursor = mDatabase.rawQuery(SQLQuery, null);
+        if (cursor.moveToFirst()) {
+            do {
+                if (cursor.getInt(cursor.getColumnIndex(EventDB.Event.COLUMN_SERI)) != -1) {
+                    String seriType = cursor.getString(cursor.getColumnIndex(EventDB.Event.COLUMN_SERI_TYPE));
+                    clearButton.setVisibility(View.VISIBLE);
+                    oldRepeatTV.setVisibility(View.VISIBLE);
+                    oldRepeatTV.setText(seriType);
+                    oldRepeat = true;
+                }
+            } while (cursor.moveToNext());
+        }
     }
 
     @Override

@@ -74,18 +74,6 @@ public class MyAlarmManager {
 
     }
 
-    private void cancelAlarm() {
-        AlarmManager alarmManager = (AlarmManager)context.getSystemService(context.ALARM_SERVICE);
-        Intent intent  = new Intent(context, AlertReceiver.class);
-        intent.putExtra("name", eventName);
-        intent.putExtra("eid", eid);
-        intent.putExtra("start", startDate);
-        intent.putExtra("end", endDate);
-        intent.putExtra("id", id);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, id, intent, 0);
-        alarmManager.cancel(pendingIntent);
-    }
-
     public Calendar strToCal(String date) {
         Calendar cal = Calendar.getInstance();
         try {

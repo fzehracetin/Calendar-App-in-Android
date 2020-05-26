@@ -3,10 +3,13 @@ package com.example.calendar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.DialogFragment;
 
+import android.app.AlarmManager;
 import android.app.DatePickerDialog;
+import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.View;
@@ -19,6 +22,7 @@ import android.widget.ImageButton;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.TimePicker;
 
 import com.google.android.material.snackbar.Snackbar;
@@ -35,15 +39,19 @@ public class ReminderActivity extends AppCompatActivity implements DatePickerDia
     private Spinner dateSpinner;
     private ImageButton calButton, timeButton;
     private EditText amountET;
-    private Button addButton, deleteButton;
+    private Button addButton, deleteButton, clearButton1, clearButton2, clearButton3, clearButton4,
+            clearButton5, clearButton6;
+    private TextView reminder1, reminder2, reminder3, reminder4, reminder5, reminder6;
     private RadioGroup reminderRG;
     private RadioButton reminderRB;
     private Bundle args;
-    private int pos = 0, DAY, YEAR, MONTH, HOUR, MINUTE, ID;
+    private int pos = 0, DAY, YEAR, MONTH, HOUR, MINUTE, ID, index = 0, gonnaDelete = 0;
     private Calendar c, startCal;
     private Date startDate;
     private ArrayList<Integer> minutes, hours, days;
     private ArrayList<String> dates;
+    private ArrayList<Button> clearButtons = new ArrayList<Button>();
+    private ArrayList<TextView> reminders = new ArrayList<TextView>();
     private boolean deleteAll = false;
     Intent datas;
 
@@ -59,7 +67,7 @@ public class ReminderActivity extends AppCompatActivity implements DatePickerDia
         MONTH = getIntent().getIntExtra("MONTH", 0);
         HOUR = getIntent().getIntExtra("HOUR", 0);
         MINUTE = getIntent().getIntExtra("MINUTE", 0);
-        ID = getIntent().getIntExtra("ID", 0);
+        ID = getIntent().getIntExtra("ID", -1);
 
         dateSpinner = findViewById(R.id.timeSpinner);
         calButton = findViewById(R.id.calendarButton);
@@ -68,6 +76,20 @@ public class ReminderActivity extends AppCompatActivity implements DatePickerDia
         addButton = findViewById(R.id.addButton);
         reminderRG = findViewById(R.id.reminderRG);
         deleteButton = findViewById(R.id.deleteButton);
+
+        clearButton1 = findViewById(R.id.clearButton1);
+        clearButton2 = findViewById(R.id.clearButton2);
+        clearButton3 = findViewById(R.id.clearButton3);
+        clearButton4 = findViewById(R.id.clearButton4);
+        clearButton5 = findViewById(R.id.clearButton5);
+        clearButton6 = findViewById(R.id.clearButton6);
+
+        reminder1 = findViewById(R.id.reminder1);
+        reminder2 = findViewById(R.id.reminder2);
+        reminder3 = findViewById(R.id.reminder3);
+        reminder4 = findViewById(R.id.reminder4);
+        reminder5 = findViewById(R.id.reminder5);
+        reminder6 = findViewById(R.id.reminder6);
 
         c = Calendar.getInstance();
         startCal = Calendar.getInstance();
@@ -84,6 +106,10 @@ public class ReminderActivity extends AppCompatActivity implements DatePickerDia
         hours = new ArrayList<Integer>();
         days = new ArrayList<Integer>();
         datas = new Intent();
+
+        initializeLists();
+        makeInvisible();
+        findReminders();
 
         ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<String>(ReminderActivity.this,
                 android.R.layout.simple_list_item_1, getResources().getStringArray(R.array.date_array));
@@ -129,44 +155,36 @@ public class ReminderActivity extends AppCompatActivity implements DatePickerDia
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (reminderRB.getText().toString().equals("Before")) {
-                    Calendar start = createCalendar(YEAR, MONTH, DAY, HOUR, MINUTE);
-                    int amount = Integer.parseInt(amountET.getText().toString());
-                    if (pos == 0) // minute
-                        minutes.add(amount);
-                        //start.add(Calendar.MINUTE, -amount);
-                    else if (pos == 1)  // hour
-                        hours.add(amount);
-                        //start.add(Calendar.HOUR, -amount);
-                    else if (pos == 2) // day
-                        days.add(amount);
-                        //start.add(Calendar.DAY_OF_MONTH, -amount);
-                    //insertToDB(start, v);
-                    Snackbar mySnackbar = Snackbar.make(v, "Reminder created.", Snackbar.LENGTH_SHORT);
+            if (reminderRB.getText().toString().equals("Before")) {
+                Calendar start = createCalendar(YEAR, MONTH, DAY, HOUR, MINUTE);
+                int amount = Integer.parseInt(amountET.getText().toString());
+                if (pos == 0) // minute
+                    minutes.add(amount);
+                else if (pos == 1)  // hour
+                    hours.add(amount);
+                else if (pos == 2) // day
+                    days.add(amount);
+                Snackbar mySnackbar = Snackbar.make(v, "Reminder created.", Snackbar.LENGTH_SHORT);
+                mySnackbar.show();
+                cleanView();
+            }
+            else if (reminderRB.getText().toString().equals("Custom")) {
+                if(c.getTime().after(startDate)) {
+                    Snackbar mySnackbar = Snackbar.make(v, "Reminder can not be after the " +
+                            "event.", Snackbar.LENGTH_SHORT);
                     mySnackbar.show();
+                }
+                else {
+                    dates.add(new SimpleDateFormat("yyyy-MM-dd HH:mm").format(c.getTime()));
                     cleanView();
                 }
-                else if (reminderRB.getText().toString().equals("Custom")) {
-                    if(c.getTime().after(startDate)) {
-                        Snackbar mySnackbar = Snackbar.make(v, "Reminder can not be after the " +
-                                "event.", Snackbar.LENGTH_SHORT);
-                        mySnackbar.show();
-                    }
-                    else {
-                        //insertToDB(c, v);
-                        dates.add(new SimpleDateFormat("yyyy-MM-dd HH:mm").format(c.getTime()));
-                        cleanView();
-                    }
-                }
+            }
             }
         });
 
         deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                /*mDatabase.delete(EventDB.Event.REMINDER_TABLE_NAME,
-                        EventDB.Event.REMINDER_COLUMN_EID + "=" + ID,
-                        null);*/
                 deleteAll = true;
                 dates = new ArrayList<String>();
                 minutes = new ArrayList<Integer>();
@@ -176,6 +194,92 @@ public class ReminderActivity extends AppCompatActivity implements DatePickerDia
                 mySnackbar.show();
             }
         });
+
+        clearButton1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                gonnaDelete = 0;
+                deleteReminder();
+            }
+        });
+
+        clearButton2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                gonnaDelete = 1;
+                deleteReminder();
+            }
+        });
+
+        clearButton3.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                gonnaDelete = 2;
+                deleteReminder();
+            }
+        });
+
+        clearButton4.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                gonnaDelete = 3;
+                deleteReminder();
+            }
+        });
+
+        clearButton5.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                gonnaDelete = 4;
+                deleteReminder();
+            }
+        });
+        clearButton6.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                gonnaDelete = 5;
+                deleteReminder();
+            }
+        });
+    }
+
+    public void deleteReminder() {
+        findReminder();
+        mDatabase.delete(EventDB.Event.REMINDER_TABLE_NAME,
+                EventDB.Event.REMINDER_COLUMN_EID + "='" + ID + "' AND " +
+                        EventDB.Event.REMINDER_COLUMN_DATE + "='" +
+                        reminders.get(gonnaDelete).getText().toString()+"'",
+                null);
+        if (gonnaDelete < index - 1 ) {
+            for (int i = gonnaDelete; i < index - 1; i++) {
+                reminders.get(i).setText(reminders.get(i + 1).getText());
+            }
+        }
+        reminders.get(index - 1).setVisibility(View.INVISIBLE);
+        clearButtons.get(index - 1).setVisibility(View.INVISIBLE);
+        index--;
+    }
+
+    private void findReminder() {
+        String SQLQuery = "SELECT * FROM " + EventDB.Event.REMINDER_TABLE_NAME +
+                " WHERE " + EventDB.Event.REMINDER_COLUMN_EID + "='" + ID + "' AND "
+                + EventDB.Event.REMINDER_COLUMN_DATE + "='" +
+                reminders.get(gonnaDelete).getText().toString() + "';";
+        Cursor cursor = mDatabase.rawQuery(SQLQuery, null);
+        if (cursor.moveToFirst()) {
+            do {
+                int id = cursor.getInt(cursor.getColumnIndex(EventDB.Event.REMINDER_COLUMN_ID));
+                cancelAlarm(id);
+            } while (cursor.moveToNext());
+        }
+    }
+
+    private void cancelAlarm(int id) {
+        AlarmManager alarmManager = (AlarmManager)getApplicationContext()
+                .getSystemService(getApplicationContext().ALARM_SERVICE);
+        Intent intent  = new Intent(getApplicationContext(), AlertReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(getApplicationContext(), id, intent, 0);
+        alarmManager.cancel(pendingIntent);
     }
 
     @Override
@@ -188,7 +292,6 @@ public class ReminderActivity extends AppCompatActivity implements DatePickerDia
 
         setResult(RESULT_OK, datas);
         finish();
-
     }
 
     public void cleanView() {
@@ -198,16 +301,22 @@ public class ReminderActivity extends AppCompatActivity implements DatePickerDia
         timeButton.setVisibility(View.INVISIBLE);
     }
 
-    public void insertToDB(Calendar c, View view) {
-        ContentValues cv = new ContentValues();
-        Date date = c.getTime();
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-        String dateStr = df.format(date);
-        cv.put(EventDB.Event.REMINDER_COLUMN_EID, ID);
-        cv.put(EventDB.Event.REMINDER_COLUMN_DATE, dateStr);
-        mDatabase.insert(EventDB.Event.REMINDER_TABLE_NAME, null, cv);
-        Snackbar mySnackbar = Snackbar.make(view, "Reminder created.", Snackbar.LENGTH_SHORT);
-        mySnackbar.show();
+    public void findReminders() {
+        String SQLQuery = "SELECT * FROM " + EventDB.Event.REMINDER_TABLE_NAME +
+                " WHERE " + EventDB.Event.REMINDER_COLUMN_EID + "='" + ID + "';";
+        Cursor cursor = mDatabase.rawQuery(SQLQuery, null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                if (index < 6) {
+                    String date = cursor.getString(cursor.getColumnIndex(EventDB.Event.REMINDER_COLUMN_DATE));
+                    reminders.get(index).setText(date);
+                    clearButtons.get(index).setVisibility(View.VISIBLE);
+                    reminders.get(index).setVisibility(View.VISIBLE);
+                    index++;
+                }
+            } while (cursor.moveToNext());
+        }
     }
 
     public void reminderCheck(View view) {
@@ -250,6 +359,39 @@ public class ReminderActivity extends AppCompatActivity implements DatePickerDia
     public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
         c.set(Calendar.HOUR_OF_DAY, hourOfDay);
         c.set(Calendar.MINUTE, minute);
+    }
+
+    public void makeInvisible() {
+
+        clearButton1.setVisibility(View.INVISIBLE);
+        clearButton2.setVisibility(View.INVISIBLE);
+        clearButton3.setVisibility(View.INVISIBLE);
+        clearButton4.setVisibility(View.INVISIBLE);
+        clearButton5.setVisibility(View.INVISIBLE);
+        clearButton6.setVisibility(View.INVISIBLE);
+
+        reminder1.setVisibility(View.INVISIBLE);
+        reminder2.setVisibility(View.INVISIBLE);
+        reminder3.setVisibility(View.INVISIBLE);
+        reminder4.setVisibility(View.INVISIBLE);
+        reminder5.setVisibility(View.INVISIBLE);
+        reminder6.setVisibility(View.INVISIBLE);
+    }
+
+    public void initializeLists() {
+        clearButtons.add(clearButton1);
+        clearButtons.add(clearButton2);
+        clearButtons.add(clearButton3);
+        clearButtons.add(clearButton4);
+        clearButtons.add(clearButton5);
+        clearButtons.add(clearButton6);
+
+        reminders.add(reminder1);
+        reminders.add(reminder2);
+        reminders.add(reminder3);
+        reminders.add(reminder4);
+        reminders.add(reminder5);
+        reminders.add(reminder6);
     }
 
 }

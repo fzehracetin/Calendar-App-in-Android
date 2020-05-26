@@ -241,19 +241,20 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
             public void onClick(View v) {
                 repeated = true;
                 Intent repeatIntent = new Intent(EditEventActivity.this, RepeatActivity.class);
+                if (getIntent().getStringExtra("EDIT") != null) {
+                    repeatIntent.putExtra("ID", ID);
+                    repeatIntent.putExtra("SERI", SERI);
+                }
                 repeatIntent.putExtra("DAY", startDatem.day);
                 repeatIntent.putExtra("YEAR", startDatem.year);
                 repeatIntent.putExtra("MONTH", startDatem.month);
                 startActivityForResult(repeatIntent, 1);
-
             }
         });
 
         reminderButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (ID == -1)
-                    ID = getMaxID() + 1;
                 if (!dateBoundValid()) {
                     Snackbar mySnackbar = Snackbar.make(v, "Date interval is not valid." +
                             " Reminder could not be created.", Snackbar.LENGTH_SHORT);
@@ -428,6 +429,9 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
                         daysOfWeek = data.getBooleanArrayExtra("Days of Week");
                     }
                 }
+                if (data.hasExtra("Deleted")) {
+                    SERI = -1;
+                }
             }
         }
         else if (resultCode == RESULT_OK && requestCode == 2) {
@@ -443,6 +447,9 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
                 minReminder = data.getIntegerArrayListExtra("minutes");
                 dayReminder = data.getIntegerArrayListExtra("days");
             }
+
+            if (ID == -1)
+                ID = getMaxID() + 1;
         }
         else if  (resultCode == RESULT_OK && requestCode == 3) {
             if(data.hasExtra("address")) {

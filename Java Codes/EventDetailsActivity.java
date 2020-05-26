@@ -57,14 +57,14 @@ public class EventDetailsActivity extends AppCompatActivity {
         shareButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent shareIntent = new Intent(Intent.ACTION_SEND);
-                shareIntent.setType("text/plain");
+                Intent shareIntent1 = new Intent(Intent.ACTION_SEND);
+                shareIntent1.setType("text/plain");
                 String text = "Event Name: "+ eventNameTV.getText().toString() +"\n" +
                         "Date: " + dateTV.getText().toString();
                 if (!locationTV.getText().toString().equals(" "))
                     text = text + "\n" + "Location: " + locationTV.getText().toString() + " " + link;
-                shareIntent.putExtra(Intent.EXTRA_TEXT, text);
-                startActivity(shareIntent);
+                shareIntent1.putExtra(Intent.EXTRA_TEXT, text);
+                startActivity(shareIntent1);
             }
         });
 
