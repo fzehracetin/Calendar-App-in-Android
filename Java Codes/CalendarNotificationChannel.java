@@ -22,10 +22,12 @@ public class CalendarNotificationChannel extends Application {
                     "Event notifications",
                     NotificationManager.IMPORTANCE_HIGH
             );
+            channel1.setSound(null, null);
             channel1.setDescription("Notifications which remind the event before it's happened.");
 
             NotificationManager manager = getSystemService(NotificationManager.class);
             manager.createNotificationChannel(channel1);
+
         }
     }
 }

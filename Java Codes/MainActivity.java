@@ -2,14 +2,21 @@ package com.example.calendar;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
+import android.Manifest;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -25,7 +32,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.text.DateFormat;
 
-import static com.example.calendar.CalendarNotificationChannel.CHANNEL_ID;
+import static com.example.calendar.SettingsActivity.DarkMode;
+import static com.example.calendar.SettingsActivity.MyPreferences;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -42,6 +50,14 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        SharedPreferences sharedPreferences = getSharedPreferences(MyPreferences, Context.MODE_PRIVATE);
+        if (sharedPreferences.getBoolean(DarkMode, false)) {
+            getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        }
+        else {
+            getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+        }
+
         mCalendarView = findViewById(R.id.calendarView);
         monthTV = findViewById(R.id.monthText);
         yearTV = findViewById(R.id.yearText);
@@ -49,10 +65,12 @@ public class MainActivity extends AppCompatActivity {
         toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-
         c = Calendar.getInstance();
         monthTV.setText(months[c.get(Calendar.MONTH)]);
         yearTV.setText(Integer.toString(c.get(Calendar.YEAR)));
+
+        if (!haveBatteryPermission())
+            haveBatteryPermission();
 
         mCalendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
             @Override
@@ -87,6 +105,31 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    public boolean haveBatteryPermission() {
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (checkSelfPermission(Manifest.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+                    == PackageManager.PERMISSION_GRANTED) {
+                return true;
+            }
+            else {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS}, 1);
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        SharedPreferences sharedPreferences = getSharedPreferences(MyPreferences, Context.MODE_PRIVATE);
+        if (sharedPreferences.getBoolean(DarkMode, false)) {
+            getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        }
+        else {
+            getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+        }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -109,7 +152,8 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(monthlyIntent);
                 return true;
             case R.id.settings:
-                Toast.makeText(this, "Settings selected.", Toast.LENGTH_SHORT).show();
+                Intent settingsIntent = new Intent(MainActivity.this, SettingsActivity.class);
+                startActivity(settingsIntent);
                 return true;
             default:
         }

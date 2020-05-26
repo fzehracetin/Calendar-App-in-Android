@@ -79,6 +79,10 @@ public class RepeatActivity extends AppCompatActivity implements DatePickerDialo
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                String day = dayTW.getText().toString();
+                String every = everyET.getText().toString();
+                String text = "Every " + every + " " + day + ".";
+                data.putExtra("Seri Type", text);
                 data.putExtra("Repeat Type", repeatRB.getText().toString());
                 if (! repeatRB.getText().toString().equals("Never")) {
                     data.putExtra("Repeat Frequency", everyET.getText().toString());

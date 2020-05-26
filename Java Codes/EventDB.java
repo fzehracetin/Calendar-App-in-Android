@@ -13,9 +13,9 @@ public class EventDB {
         public static final String COLUMN_START = "START_DATE";
         public static final String COLUMN_END = "END_DATE";
         public static final String COLUMN_SERI = "SERI_NO";
-        public static final String COLUMN_ALERT = "ALERT";
+        public static final String COLUMN_SERI_TYPE = "SERI_TYPE";
         public static final String COLUMN_LOCATION = "LOCATION";
-        public static final String COLUMN_INVITEES = "INVITEES";
+        public static final String COLUMN_LOCATION_LINK = "LOCATION_LINK";
         public static final String COLUMN_NOTE = "NOTE";
 
         public static final String REMINDER_TABLE_NAME = "REMINDERS";

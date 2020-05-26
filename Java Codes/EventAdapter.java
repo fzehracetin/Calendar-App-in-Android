@@ -113,8 +113,7 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         parentLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent editEventIntent = new Intent(view.getContext(), EditEventActivity.class);
-                editEventIntent.putExtra("EDIT", "true");
+                Intent editEventIntent = new Intent(view.getContext(), EventDetailsActivity.class);
                 editEventIntent.putExtra("EVENT NAME", name);
                 editEventIntent.putExtra("START", startDate);
                 editEventIntent.putExtra("END", endDate);

@@ -61,7 +61,7 @@ public class ReminderActivity extends AppCompatActivity implements DatePickerDia
         MINUTE = getIntent().getIntExtra("MINUTE", 0);
         ID = getIntent().getIntExtra("ID", 0);
 
-        dateSpinner = findViewById(R.id.spinner);
+        dateSpinner = findViewById(R.id.timeSpinner);
         calButton = findViewById(R.id.calendarButton);
         timeButton = findViewById(R.id.timeButton);
         amountET = findViewById(R.id.amountET);

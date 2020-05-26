@@ -27,9 +27,9 @@ public class EventDBHelper extends SQLiteOpenHelper {
                 Event.COLUMN_START + " TEXT NOT NULL, " +
                 Event.COLUMN_END + " TEXT NOT NULL, " +
                 Event.COLUMN_SERI + " INTEGER DEFAULT -1, " +
-                Event.COLUMN_ALERT + " TEXT, " +
+                Event.COLUMN_SERI_TYPE + " TEXT, " +
                 Event.COLUMN_LOCATION + " TEXT, " +
-                Event.COLUMN_INVITEES + " TEXT, " +
+                Event.COLUMN_LOCATION_LINK + " TEXT, " +
                 Event.COLUMN_NOTE + " TEXT" + ");";
 
         final String SQL_CREATE_REMINDER_TABLE = "CREATE TABLE " + Event.REMINDER_TABLE_NAME +

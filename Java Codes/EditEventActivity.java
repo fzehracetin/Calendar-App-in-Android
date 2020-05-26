@@ -1,5 +1,4 @@
 package com.example.calendar;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.DialogFragment;
 
@@ -7,8 +6,10 @@ import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -29,24 +30,31 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
+import static com.example.calendar.SettingsActivity.MyPreferences;
+import static com.example.calendar.SettingsActivity.ReminderAmount;
+import static com.example.calendar.SettingsActivity.ReminderDate;
+
 public class EditEventActivity extends AppCompatActivity implements DatePickerDialog.OnDateSetListener,
         TimePickerDialog.OnTimeSetListener {
     private SQLiteDatabase mDatabase;
     private EditText eventNameET, noteET;
     private TextView title;
     private ImageButton startDateButton, endDateButton, startTimeButton, endTimeButton;
-    private Button saveButton, deleteButton, repeatButton, reminderButton;
-    private String currentDateString, start, end, eventName, repeatType, untilDate, repeatCount, note;
+    private Button saveButton, deleteButton, repeatButton, reminderButton, locationButton;
+    private String currentDateString, start, end, eventName, repeatType, untilDate, repeatCount,
+            note, location, link, repeatFrequency, durationType, startDB, endDB, realStart,
+            seriText, amountSP;
     private Calendar c;
-    public int ID = -1, SERI = -1;
-    public boolean sTimeSet, eTimeSet, isStart, reminded =false, saved=false, repeated=false, deleteAll = false;
+    public int ID = -1, SERI = -1, dateSP;
+    public boolean sTimeSet, eTimeSet, isStart, reminded =false, saved=false, repeated=false,
+            deleteAll = false, located=false;
     public boolean[] daysOfWeek = new boolean[7];
     private Bundle args;
-    ContentValues cv;
-    private String repeatFrequency, durationType, startDB, endDB, realStart;
+    private ContentValues cv;
     private MyDate startDatem, endDatem, diffDatem;
     private ArrayList<Integer> minReminder, hourReminder, dayReminder;
     private ArrayList<String> dateReminder;
+    SharedPreferences sharedPreferences;
 
 
     public class MyDate {
@@ -93,7 +101,6 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
         }
     }
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -101,6 +108,9 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
 
         EventDBHelper dbHelper = new EventDBHelper(this);
         mDatabase = dbHelper.getWritableDatabase();
+        sharedPreferences = getSharedPreferences(MyPreferences, Context.MODE_PRIVATE);
+        amountSP = sharedPreferences.getString(ReminderAmount, "10");
+        dateSP = sharedPreferences.getInt(ReminderDate, 0);
 
         eventNameET = findViewById(R.id.eventName);
         noteET = findViewById(R.id.noteET);
@@ -113,8 +123,10 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
         reminderButton = findViewById(R.id.reminderButton);
         title = findViewById(R.id.title);
         repeatButton = findViewById(R.id.repeatButton);
+        locationButton = findViewById(R.id.locationButton);
 
         if (getIntent().getStringExtra("EDIT") != null) {
+            eventName = getIntent().getStringExtra("EVENT NAME");
             start = getIntent().getStringExtra("START");
             end = getIntent().getStringExtra("END");
             DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
@@ -140,7 +152,6 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
             } catch (ParseException e) {
                 e.printStackTrace();
             }
-            eventName = getIntent().getStringExtra("EVENT NAME");
             eventNameET.setText(eventName);
             title.setText("EDIT EVENT");
             sTimeSet = true;
@@ -262,6 +273,16 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
             }
         });
 
+        locationButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent locationIntent = new Intent(EditEventActivity.this,
+                        PlacePickerActivity.class);
+                startActivityForResult(locationIntent, 3);
+
+            }
+        });
+
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(final View view) {
@@ -288,11 +309,11 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
                             insertToCV(eventName, start, end, note);
                             cv.put(EventDB.Event.COLUMN_SERI, SERI);
                             updateRow(view, ID);
+                            if (!reminded)
+                                defaultReminderSettings();
                             addReminder(cv);
-                            if (reminded) {
-                                MyAlarmManager manager = new MyAlarmManager(ID, getApplicationContext());
-                                manager.findDates();
-                            }
+                            MyAlarmManager manager = new MyAlarmManager(ID, getApplicationContext());
+                            manager.findDates();
                         }
                     });
                     if (!isFirst()) {
@@ -302,11 +323,11 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
                                 insertToCV(eventName, start, end, note);
                                 cv.put(EventDB.Event.COLUMN_SERI, SERI);
                                 updateRow(view, ID);
+                                if (!reminded)
+                                    defaultReminderSettings();
                                 addReminder(cv);
-                                if (reminded) {
-                                    MyAlarmManager manager = new MyAlarmManager(ID, getApplicationContext());
-                                    manager.findDates();
-                                }
+                                MyAlarmManager manager = new MyAlarmManager(ID, getApplicationContext());
+                                manager.findDates();
                                 futureEvents(view, "Update");
                             }
                         });
@@ -327,19 +348,19 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
                         cv.put(EventDB.Event.COLUMN_SERI, -1);
                         if (getIntent().getStringExtra("EDIT") == null) { // new
                             insertToDB(view);
+                            if (!reminded)
+                                defaultReminderSettings();
                             addReminder(cv);
-                            if (reminded) {
-                                MyAlarmManager manager = new MyAlarmManager(ID, getApplicationContext());
-                                manager.findDates();
-                            }
+                            MyAlarmManager manager = new MyAlarmManager(ID, getApplicationContext());
+                            manager.findDates();
                         }
                         else if (ID != -1) { // update
                             updateRow(view, ID);
+                            if (!reminded)
+                                defaultReminderSettings();
                             addReminder(cv);
-                            if (reminded) {
-                                MyAlarmManager manager = new MyAlarmManager(ID, getApplicationContext());
-                                manager.findDates();
-                            }
+                            MyAlarmManager manager = new MyAlarmManager(ID, getApplicationContext());
+                            manager.findDates();
                         }
                     }
                 }
@@ -389,28 +410,88 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
 
     }
 
-    public void addReminder(ContentValues cv) {
-        if (reminded) {
-            String eventName = cv.getAsString(EventDB.Event.COLUMN_NAME);
-            String start = cv.getAsString(EventDB.Event.COLUMN_START);
-            String end = cv.getAsString(EventDB.Event.COLUMN_END);
-            String SQLQuery = "SELECT * FROM " + EventDB.Event.TABLE_NAME +
-                    " WHERE " + EventDB.Event.COLUMN_START + "='" + start + "' AND " +
-                    EventDB.Event.COLUMN_END + "='" + end + "' AND " + EventDB.Event.COLUMN_NAME + "='"
-                    + eventName + "';";
-            Cursor cursor = mDatabase.rawQuery(SQLQuery, null);
-            int id = -1;
-            if (cursor.moveToFirst()) {
-                do {
-                    id = cursor.getInt(cursor.getColumnIndex(EventDB.Event.COLUMN_ID));
-                } while (cursor.moveToNext()); }
-
-            if (id == ID) {
-                realStart = start;
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode == RESULT_OK && requestCode == 1) {
+            if (data.hasExtra("Repeat Type")) {
+                seriText = data.getStringExtra("Seri Type");
+                repeatType = data.getStringExtra("Repeat Type");
+                if (!repeatType.equals("Never")) {
+                    repeatFrequency = data.getStringExtra("Repeat Frequency");
+                    durationType = data.getStringExtra("Duration Type");
+                    if (durationType.equals("Repetitions"))
+                        repeatCount = data.getStringExtra("Repeat Count");
+                    else if (durationType.equals("Until"))
+                        untilDate = data.getStringExtra("Until Date");
+                    if (repeatType.equals("Weekly")) {
+                        // starts from sunday
+                        daysOfWeek = data.getBooleanArrayExtra("Days of Week");
+                    }
+                }
             }
-            reminderListTraverse(id, start);
-
         }
+        else if (resultCode == RESULT_OK && requestCode == 2) {
+            deleteAll = data.getBooleanExtra("deleteAll", false);
+            if (deleteAll) {
+                mDatabase.delete(EventDB.Event.REMINDER_TABLE_NAME,
+                        EventDB.Event.REMINDER_COLUMN_EID + "=" + ID,
+                        null);
+            }
+            else {
+                dateReminder = data.getStringArrayListExtra("dates");
+                hourReminder = data.getIntegerArrayListExtra("hours");
+                minReminder = data.getIntegerArrayListExtra("minutes");
+                dayReminder = data.getIntegerArrayListExtra("days");
+            }
+        }
+        else if  (resultCode == RESULT_OK && requestCode == 3) {
+            if(data.hasExtra("address")) {
+                location = data.getStringExtra("address");
+                link = data.getStringExtra("link");
+                located = true;
+            }
+        }
+    }
+
+    public void defaultReminderSettings() {
+        minReminder = new ArrayList<Integer>();
+        hourReminder = new ArrayList<Integer>();
+        dayReminder = new ArrayList<Integer>();
+        dateReminder = new ArrayList<String>();
+        int amount = Integer.parseInt(amountSP);
+        ID = getMaxID();
+
+        if (dateSP == 0) { // minute
+            minReminder.add(amount);
+        }
+        else if (dateSP == 1) { // hour
+            hourReminder.add(amount);
+        }
+        else if (dateSP == 2) { // day
+            dayReminder.add(amount);
+        }
+    }
+
+    public void addReminder(ContentValues cv) {
+
+        String eventName = cv.getAsString(EventDB.Event.COLUMN_NAME);
+        String start = cv.getAsString(EventDB.Event.COLUMN_START);
+        String end = cv.getAsString(EventDB.Event.COLUMN_END);
+        String SQLQuery = "SELECT * FROM " + EventDB.Event.TABLE_NAME +
+                " WHERE " + EventDB.Event.COLUMN_START + "='" + start + "' AND " +
+                EventDB.Event.COLUMN_END + "='" + end + "' AND " + EventDB.Event.COLUMN_NAME + "='"
+                + eventName + "';";
+        Cursor cursor = mDatabase.rawQuery(SQLQuery, null);
+        int id = -1;
+        if (cursor.moveToFirst()) {
+            do {
+                id = cursor.getInt(cursor.getColumnIndex(EventDB.Event.COLUMN_ID));
+            } while (cursor.moveToNext()); }
+
+        if (id == ID) {
+            realStart = start;
+        }
+        reminderListTraverse(id, start);
     }
 
     public void reminderListTraverse(int id, String start) {
@@ -562,12 +643,10 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
             i++;
         }
 
-        if (reminded) {
-            MyAlarmManager manager = new MyAlarmManager(ID, getApplicationContext());
-            manager.findDates();
-        }
-    }
+        MyAlarmManager manager = new MyAlarmManager(ID, getApplicationContext());
+        manager.findDates();
 
+    }
 
     public Date repeatEventCreator(MyDate buffer, Date until, View view) {
         Calendar startT = startDatem.getCalendar();
@@ -585,9 +664,18 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
             cv.put(EventDB.Event.COLUMN_NAME, eventName);
             cv.put(EventDB.Event.COLUMN_START, startStr);
             cv.put(EventDB.Event.COLUMN_END, endStr);
+            cv.put(EventDB.Event.COLUMN_NOTE, noteET.getText().toString());
             cv.put(EventDB.Event.COLUMN_SERI, SERI);
+            cv.put(EventDB.Event.COLUMN_SERI_TYPE, seriText);
+            if (located) {
+                cv.put(EventDB.Event.COLUMN_LOCATION, location);
+                cv.put(EventDB.Event.COLUMN_LOCATION_LINK, link);
+            }
             insertToDB(view);
+            if (!reminded)
+                defaultReminderSettings();
             addReminder(cv);
+
         }
         return end.getTime();
     }
@@ -601,40 +689,6 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
         return c;
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode == RESULT_OK && requestCode == 1) {
-            if (data.hasExtra("Repeat Type")) {
-                repeatType = data.getStringExtra("Repeat Type");
-                if (!repeatType.equals("Never")) {
-                    repeatFrequency = data.getStringExtra("Repeat Frequency");
-                    durationType = data.getStringExtra("Duration Type");
-                    if (durationType.equals("Repetitions"))
-                        repeatCount = data.getStringExtra("Repeat Count");
-                    else if (durationType.equals("Until"))
-                        untilDate = data.getStringExtra("Until Date");
-                    if (repeatType.equals("Weekly")) {
-                        // starts from sunday
-                        daysOfWeek = data.getBooleanArrayExtra("Days of Week");
-                    }
-                }
-            }
-        }
-        else if (resultCode == RESULT_OK && requestCode == 2) {
-            deleteAll = data.getBooleanExtra("deleteAll", false);
-            if (deleteAll) {
-                mDatabase.delete(EventDB.Event.REMINDER_TABLE_NAME,
-                        EventDB.Event.REMINDER_COLUMN_EID + "=" + ID,
-                        null);
-            }
-            else {
-                dateReminder = data.getStringArrayListExtra("dates");
-                hourReminder = data.getIntegerArrayListExtra("hours");
-                minReminder = data.getIntegerArrayListExtra("minutes");
-                dayReminder = data.getIntegerArrayListExtra("days");
-            }
-        }
-    }
 
     public boolean isFirst() {
         String SQLQuery = "SELECT * FROM " + EventDB.Event.TABLE_NAME +
@@ -671,15 +725,17 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
                                 EventDB.Event.REMINDER_COLUMN_EID + "=" + ID,
                                 null);
                     }
+                    if (!reminded)
+                        defaultReminderSettings();
                     addReminder(cv);
 
                 }
             } while (cursor.moveToNext());
         }
-        if (reminded) {
-            MyAlarmManager manager = new MyAlarmManager(ID, getApplicationContext());
-            manager.findDates();
-        }
+
+        MyAlarmManager manager = new MyAlarmManager(ID, getApplicationContext());
+        manager.findDates();
+
     }
 
     public void futureEvents(View view, String type) {
@@ -706,15 +762,14 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
                                 EventDB.Event.REMINDER_COLUMN_EID + "=" + ID,
                                 null);
                     }
+                    if (!reminded)
+                        defaultReminderSettings();
                     addReminder(cv);
                 }
             } while (cursor.moveToNext());
         }
-        if (reminded) {
-            MyAlarmManager manager = new MyAlarmManager(ID, getApplicationContext());
-            manager.findDates();
-        }
-
+        MyAlarmManager manager = new MyAlarmManager(ID, getApplicationContext());
+        manager.findDates();
     }
 
     public String findStartDate(int id) {
@@ -790,6 +845,10 @@ public class EditEventActivity extends AppCompatActivity implements DatePickerDi
         cv.put(EventDB.Event.COLUMN_START, start);
         cv.put(EventDB.Event.COLUMN_END, end);
         cv.put(EventDB.Event.COLUMN_NOTE, note);
+        if (located) {
+            cv.put(EventDB.Event.COLUMN_LOCATION, location);
+            cv.put(EventDB.Event.COLUMN_LOCATION_LINK, link);
+        }
     }
 
     public void updateRow(View view, int id) {

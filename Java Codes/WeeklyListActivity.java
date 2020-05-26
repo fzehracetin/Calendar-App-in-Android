@@ -178,7 +178,8 @@ public class WeeklyListActivity extends AppCompatActivity implements DatePickerD
                 }
                 return true;
             case R.id.settings:
-                Toast.makeText(this, "Settings selected.", Toast.LENGTH_SHORT).show();
+                Intent settingsIntent = new Intent(WeeklyListActivity.this, SettingsActivity.class);
+                startActivity(settingsIntent);
                 return true;
             default:
         }

@@ -16,14 +16,14 @@ import java.util.Random;
 
 public class MyAlarmManager {
 
-    private int id;
+    private int eid, id;
     private String eventName, startDate, endDate, note;
     private SQLiteDatabase mDatabase;
     private Context context;
 
 
-    public MyAlarmManager(int id, Context context) {
-        this.id = id;
+    public MyAlarmManager(int eid, Context context) {
+        this.eid = eid;
         this.context = context;
 
         EventDBHelper dbHelper = new EventDBHelper(context);
@@ -33,7 +33,7 @@ public class MyAlarmManager {
 
     private void findEvent() {
         String SQLQuery = "SELECT * FROM " + EventDB.Event.TABLE_NAME +
-                " WHERE " + EventDB.Event.COLUMN_ID + "='" + id + "';";
+                " WHERE " + EventDB.Event.COLUMN_ID + "='" + eid + "';";
         Cursor cursor = mDatabase.rawQuery(SQLQuery, null);
 
         if (cursor.moveToFirst()) {
@@ -41,19 +41,19 @@ public class MyAlarmManager {
                 eventName = cursor.getString(cursor.getColumnIndex(EventDB.Event.COLUMN_NAME));
                 startDate = cursor.getString(cursor.getColumnIndex(EventDB.Event.COLUMN_START));
                 endDate = cursor.getString(cursor.getColumnIndex(EventDB.Event.COLUMN_END));
-                note = cursor.getString(cursor.getColumnIndex(EventDB.Event.COLUMN_NOTE));
             } while (cursor.moveToNext());
         }
     }
 
     public void findDates() {
         String SQLQuery = "SELECT * FROM " + EventDB.Event.REMINDER_TABLE_NAME +
-                " WHERE " + EventDB.Event.REMINDER_COLUMN_EID + "='" + id + "';";
+                " WHERE " + EventDB.Event.REMINDER_COLUMN_EID + "='" + eid + "';";
         Cursor cursor = mDatabase.rawQuery(SQLQuery, null);
 
         if (cursor.moveToFirst()) {
             do {
                 String date = cursor.getString(cursor.getColumnIndex(EventDB.Event.REMINDER_COLUMN_DATE));
+                id = cursor.getInt(cursor.getColumnIndex(EventDB.Event.REMINDER_COLUMN_ID));
                 createAlarm(date);
             } while (cursor.moveToNext());
         }
@@ -64,11 +64,11 @@ public class MyAlarmManager {
         AlarmManager alarmManager = (AlarmManager)context.getSystemService(context.ALARM_SERVICE);
         Intent intent  = new Intent(context, AlertReceiver.class);
         intent.putExtra("name", eventName);
-        intent.putExtra("id", id);
+        intent.putExtra("eid", eid);
         intent.putExtra("start", startDate);
-        Random random = new Random();
-        int uniqueNum = random.nextInt(9999 - 1000) + 1000;
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, uniqueNum, intent, 0);
+        intent.putExtra("end", endDate);
+        intent.putExtra("id", id);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, id, intent, 0);
 
         alarmManager.setExact(AlarmManager.RTC_WAKEUP, c.getTimeInMillis(), pendingIntent);
 
@@ -78,9 +78,11 @@ public class MyAlarmManager {
         AlarmManager alarmManager = (AlarmManager)context.getSystemService(context.ALARM_SERVICE);
         Intent intent  = new Intent(context, AlertReceiver.class);
         intent.putExtra("name", eventName);
-        intent.putExtra("id", id);
+        intent.putExtra("eid", eid);
         intent.putExtra("start", startDate);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 1, intent, 0);
+        intent.putExtra("end", endDate);
+        intent.putExtra("id", id);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, id, intent, 0);
         alarmManager.cancel(pendingIntent);
     }
 
