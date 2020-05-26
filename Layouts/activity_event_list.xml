@@ -17,7 +17,7 @@
             android:layout_below="@+id/day_name"
             android:layout_alignParentStart="true"
             android:layout_alignParentBottom="true"
-            android:layout_marginStart="2dp"
+            android:layout_marginStart="4dp"
             android:layout_marginTop="17dp"
             android:layout_marginBottom="-4dp">
 
@@ -62,5 +62,6 @@
         android:layout_margin="16dp"
         android:src="@drawable/ic_add"
         app:fabSize="auto"
+        app:rippleColor="@color/colorPrimary"
         android:id="@+id/floatingButton"/>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

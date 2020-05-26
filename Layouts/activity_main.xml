@@ -16,6 +16,8 @@
         android:layout_height="362dp"
         android:layout_marginTop="24dp"
         android:firstDayOfWeek="2"
+        android:outlineSpotShadowColor="@color/colorPrimary"
+        android:outlineAmbientShadowColor="@color/colorPrimary"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/yearText" />
@@ -26,7 +28,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="36dp"
         android:layout_marginEnd="32dp"
-        android:backgroundTint="#F7F7F7"
+        android:backgroundTint="@color/colorZit"
         android:fontFamily="sans-serif-medium"
         android:text="TODAY"
         android:textAlignment="center"
